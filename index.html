@@ -93,6 +93,23 @@
     .dpct-n { font-family:var(--fd); font-size:30px; font-weight:800; }
     .dpct-l { font-size:9px; color:var(--faint); }
 
+    /* WORKOUT TYPE DESCRIPTION TOGGLE */
+    .dhc { cursor:pointer; }
+    .dhc-toggle { font-size:16px; color:var(--muted); margin-left:auto; flex-shrink:0; transition:transform 0.3s; }
+    .dhc-toggle.open { transform:rotate(180deg); }
+    .dhc-info {
+      display:none; margin-top:14px; padding-top:14px;
+      border-top:1px solid rgba(255,255,255,0.07);
+    }
+    .dhc-info.open { display:block; }
+    .dhc-info-title { font-family:var(--fd); font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+    .dhc-info-body { font-size:12px; color:#aaa; line-height:1.7; }
+    .dhc-tip {
+      display:flex; align-items:flex-start; gap:8px;
+      margin-top:8px; font-size:12px; color:#aaa;
+    }
+    .dhc-tip-icon { flex-shrink:0; font-size:14px; }
+
     /* EXERCISE CARDS */
     #exercises { padding:0 16px; }
     .ex-card {
@@ -624,6 +641,7 @@ function defaultState() {
     woWeek: 0, woDay: 0,
     mlWeek: 0, mlDay: 0,
     activeTab: 'workout',
+    infoOpen: null,
     logs: {}, mealLogs: {}, shopChecks: {},
     mealCustom: {},  // keyed by "dayIdx-slot" e.g. "0-breakfast"
   };
@@ -685,6 +703,45 @@ function woDayPct(di) {
 
 function woWeekPct() { return Math.round(WORKOUTS.reduce((a,_,i)=>a+woDayPct(i),0)/7); }
 
+const WORKOUT_INFO = {
+  heavy: {
+    title: "What is a Heavy Day?",
+    body: "Heavy days are your primary strength sessions. You're pushing close to your limit on each set — the last 1–2 reps should feel genuinely hard. This is where you build raw strength.",
+    tips: [
+      { icon:"⏱", text:"Rest 2–3 minutes fully between sets. Don't rush — your muscles need it to perform the next set properly." },
+      { icon:"📈", text:"When you hit the top of the rep range on all sets, progress: add a rep, add a set, or advance the movement (e.g. regular push-up → diamond push-up)." },
+      { icon:"🧘", text:"Warm up for 3–5 minutes before starting. Arm circles, leg swings, and a slow first set." },
+    ]
+  },
+  medium: {
+    title: "What is a Medium Day?",
+    body: "Medium days build volume and reinforce good technique. The effort should feel controlled — you could do 2–3 more reps but you stop at the target. Focus on feeling the muscle work.",
+    tips: [
+      { icon:"⏱", text:"Rest 90 seconds between sets. Enough to recover, not enough to go cold." },
+      { icon:"🎯", text:"Slow down the movement. Try a 2-second down, 1-second pause, 1-second up tempo to increase time under tension." },
+      { icon:"📝", text:"Medium days are great for noticing form issues — if something feels off, fix it here when the load isn't maximal." },
+    ]
+  },
+  light: {
+    title: "What is a Light Day?",
+    body: "Light days keep you moving without wearing you down. Higher reps, lower effort — think 60–70% of your max. This promotes active recovery and builds your aerobic base.",
+    tips: [
+      { icon:"⏱", text:"Rest only 60 seconds. Keep the session moving with a light circuit feel." },
+      { icon:"💨", text:"You should be able to hold a short conversation during sets. If you're gasping, slow down." },
+      { icon:"🔄", text:"Light days reduce soreness from heavy/medium days and help you come back stronger on the next heavy session." },
+    ]
+  },
+  recovery: {
+    title: "What is Recovery Day?",
+    body: "Recovery days are not rest days — they're active movement to help your body repair. Light stretching and mobility work reduces stiffness, improves flexibility, and keeps you consistent without adding fatigue.",
+    tips: [
+      { icon:"🌡", text:"Move gently — never stretch to the point of pain. A mild pulling sensation is fine." },
+      { icon:"💧", text:"Drink plenty of water and eat enough protein today. Recovery happens outside the workout." },
+      { icon:"😴", text:"Prioritise sleep on recovery days. Most muscle repair happens during deep sleep." },
+    ]
+  },
+};
+
 function renderWorkout() {
   const pct = woWeekPct();
   document.getElementById('wo-prog').style.width = pct+'%';
@@ -706,12 +763,34 @@ function renderWorkout() {
 
   // Day header
   const d = WORKOUTS[S.woDay], p = woDayPct(S.woDay);
+  const info = WORKOUT_INFO[d.type];
+  const isOpen = S.infoOpen === S.woDay;
   document.getElementById('wo-day-hdr').innerHTML = `
-    <div class="dhc" style="background:${d.bg};border-color:${d.color}44">
-      <div class="dhe">${d.emoji}</div>
-      <div><div class="dht" style="color:${d.color}">Day ${d.day} — ${d.name}</div><div class="dhtitle">${d.label.toUpperCase()} DAY</div><div class="dhn">${d.note}</div></div>
-      <div class="dpct"><div class="dpct-n" style="color:${d.color}">${p}%</div><div class="dpct-l">DONE</div></div>
+    <div class="dhc" style="background:${d.bg};border-color:${d.color}44" id="dhc-card">
+      <div style="display:flex;align-items:center;gap:14px;width:100%">
+        <div class="dhe">${d.emoji}</div>
+        <div style="flex:1">
+          <div class="dht" style="color:${d.color}">Day ${d.day} — ${d.name}</div>
+          <div class="dhtitle">${d.label.toUpperCase()} DAY</div>
+          <div class="dhn">${d.note}</div>
+        </div>
+        <div class="dpct">
+          <div class="dpct-n" style="color:${d.color}">${p}%</div>
+          <div class="dpct-l">DONE</div>
+        </div>
+        <div class="dhc-toggle${isOpen?' open':''}" id="dhc-arrow">▼</div>
+      </div>
+      <div class="dhc-info${isOpen?' open':''}" id="dhc-info">
+        <div class="dhc-info-title" style="color:${d.color}">${info.title}</div>
+        <div class="dhc-info-body">${info.body}</div>
+        ${info.tips.map(t=>`<div class="dhc-tip"><span class="dhc-tip-icon">${t.icon}</span><span>${t.text}</span></div>`).join('')}
+      </div>
     </div>`;
+
+  document.getElementById('dhc-card').addEventListener('click', () => {
+    S.infoOpen = (S.infoOpen === S.woDay) ? null : S.woDay;
+    save(); renderWorkout();
+  });
 
   // Exercises
   const el = document.getElementById('exercises');
