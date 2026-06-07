@@ -117,11 +117,23 @@
       border-radius:12px; padding:14px 16px; margin-bottom:10px; transition:border-color 0.3s;
     }
     .ex-card.done { border-color:var(--dc); }
-    .ex-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .ex-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; cursor:pointer; }
     .ex-name { font-weight:600; font-size:14px; font-family:var(--fd); letter-spacing:0.5px; }
     .ex-meta { font-size:11px; color:var(--muted); margin-top:2px; }
     .ex-badge { border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; background:var(--surface2); color:var(--faint); transition:all 0.3s; }
     .ex-badge.done { color:#fff; }
+    .ex-how {
+      display:none; margin-bottom:12px; padding:12px 14px;
+      background:var(--bg); border-radius:10px; border-left:3px solid var(--dc);
+    }
+    .ex-how.open { display:block; }
+    .ex-how-title { font-family:var(--fd); font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--dc); margin-bottom:8px; }
+    .ex-how-steps { list-style:none; padding:0; }
+    .ex-how-steps li { font-size:12px; color:#bbb; line-height:1.6; padding:3px 0; display:flex; gap:8px; }
+    .ex-how-steps li::before { content:attr(data-n); color:var(--dc); font-weight:700; font-family:var(--fd); flex-shrink:0; font-size:13px; }
+    .ex-how-note { font-size:11px; color:var(--muted); margin-top:8px; font-style:italic; line-height:1.5; }
+    .ex-info-btn { background:none; border:none; color:var(--muted); font-size:14px; cursor:pointer; padding:0 0 0 6px; -webkit-tap-highlight-color:transparent; flex-shrink:0; transition:transform 0.2s; }
+    .ex-info-btn.open { transform:rotate(180deg); color:var(--dc); }
     .set-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
     .set-chk {
       width:24px; height:24px; border-radius:50%; border:2px solid #555;
@@ -642,6 +654,7 @@ function defaultState() {
     mlWeek: 0, mlDay: 0,
     activeTab: 'workout',
     infoOpen: null,
+    exInfoOpen: null,
     logs: {}, mealLogs: {}, shopChecks: {},
     mealCustom: {},  // keyed by "dayIdx-slot" e.g. "0-breakfast"
   };
@@ -702,6 +715,38 @@ function woDayPct(di) {
 }
 
 function woWeekPct() { return Math.round(WORKOUTS.reduce((a,_,i)=>a+woDayPct(i),0)/7); }
+
+const EXERCISE_INFO = {
+  // PUSH
+  "Push-ups":           { steps:["Start in a high plank — hands shoulder-width apart, body in a straight line from head to heels","Lower your chest to the floor by bending your elbows at roughly 45° from your body","Stop when your chest is 1–2cm from the floor, keeping your core tight throughout","Push the floor away to return to the start — fully extend your arms at the top"], note:"Common mistake: letting your hips sag or pike up. Squeeze your glutes and abs to stay rigid." },
+  "Pike Push-ups":      { steps:["Start in a downward dog position — hips high, forming an inverted V","Bend your elbows and lower the top of your head toward the floor between your hands","Keep your hips high throughout — this is a shoulder exercise, not a chest one","Press back up to the start, fully extending your arms"], note:"The higher your hips, the more it targets your shoulders. Walk your feet closer to your hands to increase difficulty." },
+  "Incline Push-ups":   { steps:["Place your hands on an elevated surface (chair, wall, or step) — the higher, the easier","Keep your body in a straight line from head to heels","Lower your chest to the surface with control","Push back up to the start"], note:"Great for building toward full push-ups. Lower the surface height over time to increase difficulty." },
+  "Wall / Regular Push-ups": { steps:["For wall: stand arm's length from a wall, place hands flat at chest height","Lean in and bend your elbows to bring your face close to the wall","Push back to the start position","For floor push-ups: follow the standard push-up steps above"], note:"Wall push-ups are a very low-intensity variation. If they feel too easy, move to incline or full push-ups." },
+  "Plank Shoulder Taps":{ steps:["Start in a high plank position — hands under shoulders, body straight","Lift one hand and tap the opposite shoulder, keeping your hips as still as possible","Return that hand to the floor and repeat on the other side — that's one rep","Actively resist any rotation in your hips by bracing your core hard"], note:"Slower is harder. The goal is zero hip rotation — if you're rocking side to side, widen your feet." },
+  // LEGS
+  "Bodyweight Squats":  { steps:["Stand with feet shoulder-width apart, toes turned out slightly","Sit back and down as if lowering onto a chair — keep your chest tall","Descend until your thighs are at least parallel to the floor","Drive through your heels to return to standing, squeezing your glutes at the top"], note:"Keep your knees tracking over your toes throughout. If your heels rise, work on ankle mobility." },
+  "Reverse Lunges":     { steps:["Stand tall with feet hip-width apart","Step one foot back and lower your back knee toward the floor — stop just before it touches","Your front shin should be roughly vertical, front thigh parallel to the floor","Push through your front heel to step back to the start, then repeat on the other side"], note:"Reverse lunges are easier on the knees than forward lunges. Keep your torso upright — don't lean forward." },
+  "Glute Bridges":      { steps:["Lie on your back, knees bent, feet flat on the floor hip-width apart","Push through your heels to lift your hips until your body forms a straight line from knees to shoulders","Squeeze your glutes hard at the top and hold for 1 second","Lower back down with control — don't let your hips crash to the floor"], note:"To increase difficulty: pause longer at the top, add a resistance band above your knees, or progress to single-leg." },
+  "Glute Bridge Marches":{ steps:["Get into a standard glute bridge position with hips raised","Keeping your hips level, lift one foot off the floor and bring your knee toward your chest","Lower that foot back to the floor and immediately lift the other — alternate like a slow march","Keep your core braced — the goal is zero hip drop as you switch legs"], note:"This is much harder than it looks. If your hips are dropping significantly, return to standard glute bridges first." },
+  "Hip Thrusts":        { steps:["Sit on the floor with your upper back against a sturdy surface (sofa, bench)","Plant feet flat on the floor, knees bent at roughly 90°","Drive your hips up by pushing through your heels, squeezing your glutes at the top","Your shoulders pivot on the surface as your hips rise — keep your chin tucked"], note:"Hip thrusts have a larger range of motion than glute bridges and are more glute-focused. The top position should feel like a full glute contraction." },
+  // CORE
+  "Hollow Body Hold":   { steps:["Lie on your back and press your lower back firmly into the floor","Extend your arms overhead and legs straight out — raise both slightly off the floor","Your body should form a shallow dish shape — lower back must stay pressed down","Hold this position while breathing steadily"], note:"If your lower back lifts off the floor, raise your legs higher or bend your knees. The lower back contact is non-negotiable." },
+  "Plank":              { steps:["Place your forearms on the floor, elbows directly under your shoulders","Extend your legs back, supporting your weight on your toes","Your body should form a straight line — no sagging hips, no raised backside","Look at the floor, keep your neck neutral, and breathe steadily"], note:"Most people can hold a plank longer by squeezing everything — glutes, abs, quads. Think of it as full-body tension, not just abs." },
+  "Side Plank":         { steps:["Lie on your side and prop yourself up on one forearm — elbow under shoulder","Stack your feet or stagger them for stability","Lift your hips to form a straight line from head to feet","Hold, keeping your top hip from drooping toward the floor"], note:"If this is too hard, bend your bottom knee and keep it on the floor. To progress: add a hip dip or raise your top leg." },
+  "Dead Bug":           { steps:["Lie on your back, arms pointing straight up, knees bent at 90° in the air (tabletop position)","Press your lower back into the floor and keep it there throughout","Slowly extend one arm overhead while extending the opposite leg toward the floor","Return to start before repeating on the other side — move slowly and controlled"], note:"The lower back staying flat is the entire point of this exercise. If it arches, you've gone too far — reduce the range of motion." },
+  "Mountain Climbers":  { steps:["Start in a high plank — hands under shoulders, body in a straight line","Drive one knee toward your chest, then quickly switch legs in a running motion","Keep your hips down and level — don't let them bounce up as you alternate","Maintain a strong plank position throughout"], note:"Slow mountain climbers are a core exercise. Fast ones become cardio. For light days, keep them controlled and deliberate." },
+  "Bird Dog":           { steps:["Start on all fours — hands under shoulders, knees under hips, back flat","Simultaneously extend your right arm forward and left leg back until both are parallel to the floor","Hold for 2 seconds, keeping your hips level and back flat","Return to start and repeat on the opposite side"], note:"Think about lengthening your body rather than lifting high. A small, controlled extension is better than a large sloppy one." },
+  // BACK & SHOULDERS
+  "Superman Holds":     { steps:["Lie face down with arms extended overhead — body flat on the floor","Simultaneously lift your arms, chest, and legs off the floor by squeezing your back and glutes","Hold the raised position for 2 seconds, breathing steadily","Lower back down with control and repeat"], note:"Don't strain your neck — keep it in a neutral position, looking at the floor. The movement comes from your back and glutes, not your neck." },
+  // RECOVERY
+  "Light Walk / Jog in Place": { steps:["Walk or jog on the spot at a comfortable, easy pace","Lift your knees gently with each step — no need to go high","Keep your arms swinging naturally","Gradually increase pace over the first minute, then settle into a comfortable rhythm"], note:"This should feel genuinely easy. The goal is blood flow and warming up the joints, not cardio." },
+  "Cat-Cow Stretches":  { steps:["Start on all fours, hands under shoulders, knees under hips","Cow: inhale and drop your belly toward the floor, lift your head and tailbone","Cat: exhale and round your spine toward the ceiling, tuck your chin and pelvis","Flow between the two slowly, linking each movement to your breath"], note:"Move as slowly as you like. Focus on feeling each vertebra move individually." },
+  "Hip Flexor Stretch": { steps:["Kneel on one knee with the other foot planted in front (lunge position)","Shift your hips forward gently until you feel a stretch at the front of your back hip","Keep your torso upright — don't lean forward","Hold steadily — no bouncing"], note:"The hip flexors get tight from sitting. A good stretch here can relieve lower back tension significantly." },
+  "Child's Pose":       { steps:["Kneel and sit back onto your heels","Extend your arms forward on the floor and lower your chest toward the ground","Let your forehead rest on the floor","Breathe deeply and let your body relax with each exhale"], note:"Walk your arms to one side to get a lateral stretch too." },
+  "Thread the Needle":  { steps:["Start on all fours","Slide one arm under your body along the floor, rotating your upper back as you go","Let your shoulder and ear rest on the floor — hold the stretch","Return to all fours and repeat on the other side"], note:"A great thoracic mobility drill. Don't force the rotation — let gravity do the work." },
+  "Leg Swings":         { steps:["Stand next to a wall and hold it lightly for balance","Swing one leg forward and back in a controlled arc, gradually increasing range","After 10 reps, swing the same leg side to side across your body","Repeat on the other leg"], note:"Keep the swinging leg relaxed — this is a dynamic stretch, not a kick. Let momentum do the work." },
+  "Deep Breathing":     { steps:["Lie on your back or sit comfortably","Inhale slowly through your nose for 4 counts, letting your belly rise first then your chest","Hold for 2 counts","Exhale slowly through your mouth for 6 counts, letting your body soften"], note:"Deep breathing activates the parasympathetic nervous system — your rest and recovery mode. Even 5 minutes makes a measurable difference." },
+};
 
 const WORKOUT_INFO = {
   heavy: {
@@ -798,16 +843,53 @@ function renderWorkout() {
   d.exercises.forEach(ex => {
     const done = Array.from({length:ex.sets},(_,i)=>S.logs[wKey(S.woWeek,S.woDay,ex.id,i+1)]?.done?1:0).reduce((a,b)=>a+b,0);
     const all = done===ex.sets;
+    const infoKey = S.woDay+'-'+ex.id;
+    const isOpen = S.exInfoOpen === infoKey;
+    const info = EXERCISE_INFO[ex.name];
+
     const card = document.createElement('div');
     card.className = 'ex-card'+(all?' done':'');
     card.style.setProperty('--dc', d.color);
+
+    let stepsHTML = '';
+    if (info) {
+      stepsHTML = `
+        <div class="ex-how${isOpen?' open':''}" id="exhow-${infoKey}">
+          <div class="ex-how-title">How to perform</div>
+          <ul class="ex-how-steps">
+            ${info.steps.map((s,i)=>`<li data-n="${i+1}">${s}</li>`).join('')}
+          </ul>
+          ${info.note ? `<div class="ex-how-note">💡 ${info.note}</div>` : ''}
+        </div>`;
+    }
+
     let rows='';
     for(let s=1;s<=ex.sets;s++){
       const k=wKey(S.woWeek,S.woDay,ex.id,s), e=S.logs[k]||{};
       rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><input class="set-inp" type="text" placeholder="reps / time" value="${e.reps||''}" data-k="${k}"/></div>`;
     }
-    card.innerHTML=`<div class="ex-top"><div><div class="ex-name">${ex.name}</div><div class="ex-meta">${ex.sets} sets · ${ex.target}</div></div><div class="ex-badge${all?' done':''}" style="${all?`background:${d.color}`:''}"> ${done}/${ex.sets}</div></div>${rows}`;
-    card.querySelectorAll('.set-chk').forEach(b=>b.addEventListener('click',()=>{
+
+    card.innerHTML=`
+      <div class="ex-top" id="extop-${infoKey}">
+        <div><div class="ex-name">${ex.name}</div><div class="ex-meta">${ex.sets} sets · ${ex.target}</div></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="ex-badge${all?' done':''}" style="${all?`background:${d.color}`:''}"> ${done}/${ex.sets}</div>
+          ${info ? `<button class="ex-info-btn${isOpen?' open':''}" id="exbtn-${infoKey}">▼</button>` : ''}
+        </div>
+      </div>
+      ${stepsHTML}
+      ${rows}`;
+
+    // Toggle how-to on header tap
+    if (info) {
+      card.querySelector(`#extop-${infoKey}`).addEventListener('click', () => {
+        S.exInfoOpen = (S.exInfoOpen === infoKey) ? null : infoKey;
+        save(); renderWorkout();
+      });
+    }
+
+    card.querySelectorAll('.set-chk').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();
       const k=b.dataset.k; if(!S.logs[k])S.logs[k]={};
       S.logs[k].done=!S.logs[k].done; save(); renderWorkout();
     }));
