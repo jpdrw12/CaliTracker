@@ -310,6 +310,29 @@
     /* PREV REPS */
     .prev-reps{font-size:10px;color:var(--faint);margin-left:4px;white-space:nowrap;font-style:italic;}
 
+    /* PROGRESS CHART */
+    .chart-wrap{padding:0 16px 12px;}
+    .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+    .chart-title{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+    .chart-bars{display:flex;align-items:flex-end;gap:5px;height:60px;}
+    .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .chart-bar{width:100%;border-radius:4px 4px 0 0;background:var(--surface2);transition:height 0.4s;min-height:3px;position:relative;}
+    .chart-bar.current{background:var(--teal);}
+    .chart-bar-lbl{font-size:8px;color:var(--faint);font-family:var(--fd);font-weight:700;white-space:nowrap;}
+    .chart-bar-pct{font-size:8px;color:var(--muted);font-family:var(--fd);}
+
+    /* NOTE SEARCH */
+    .note-search-wrap{padding:0 16px 8px;}
+    .note-search-inp{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:9px 14px;font-size:13px;outline:none;font-family:var(--fb);-webkit-appearance:none;}
+    .note-search-inp:focus{border-color:var(--teal);}
+
+    /* TASK TIME */
+    .task-time-badge{font-size:10px;color:var(--muted);margin-left:2px;}
+
+    /* MEAL ROTATION BADGE */
+    .meal-rotation-badge{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:10px;font-family:var(--fd);font-weight:700;letter-spacing:1px;color:var(--muted);cursor:pointer;-webkit-tap-highlight-color:transparent;margin-left:8px;}
+    .meal-rotation-badge.week-b{background:#1a1a2d;border-color:#7b9ef044;color:#7b9ef0;}
+
     /* BACKUP PROMPT BANNER */
     #backup-prompt{
       display:none;position:fixed;top:calc(var(--sat) + 8px);left:12px;right:12px;z-index:400;
@@ -399,7 +422,13 @@
         </div>
       </div>
     </div>
-    <div class="prog-lbl"><span style="color:var(--muted);font-size:10px;letter-spacing:1px">TODAY'S MEALS</span><span id="ml-pct-lbl" style="font-size:10px;color:#aaa">0/3</span></div>
+    <div class="prog-lbl">
+      <span style="display:flex;align-items:center">
+        <span style="color:var(--muted);font-size:10px;letter-spacing:1px">TODAY'S MEALS</span>
+        <span class="meal-rotation-badge" id="meal-rotation-badge" onclick="toggleMealRotation()">WEEK A</span>
+      </span>
+      <span id="ml-pct-lbl" style="font-size:10px;color:#aaa">0/3</span>
+    </div>
     <div class="prog-track"><div class="prog-fill ml-fill" id="ml-prog" style="width:0%"></div></div>
   </div>
   <div class="day-sel" id="ml-day-sel"></div>
@@ -447,6 +476,9 @@
     <div style="font-size:12px;color:var(--muted)" id="notes-count"></div>
     <button class="add-note-btn" onclick="openNoteEditor(null)">+ NEW NOTE</button>
   </div>
+  <div class="note-search-wrap">
+    <input class="note-search-inp" id="note-search" type="text" placeholder="🔍 Search notes..." oninput="renderNotes()"/>
+  </div>
   <div class="tag-filter-bar" id="tag-filter-bar"></div>
   <div class="notes-list" id="notes-list"></div>
 </div>
@@ -459,7 +491,13 @@
   <div style="padding:14px 16px 0">
     <div class="data-stat"><div class="data-stat-title">YOUR PROGRESS</div><div class="data-stat-grid" id="stat-grid"></div></div>
   </div>
-  <div style="padding:12px 16px 0">
+  <div class="chart-wrap">
+    <div class="chart-card">
+      <div class="chart-title">WEEKLY COMPLETION — LAST 8 WEEKS</div>
+      <div class="chart-bars" id="chart-bars"></div>
+    </div>
+  </div>
+  <div style="padding:0 16px 12px">
     <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px">BACKUP & RESTORE</div>
     <div class="data-card">
       <div class="data-row" onclick="exportData()">
@@ -475,7 +513,7 @@
     </div>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>
   </div>
-  <div style="padding:12px 16px">
+  <div style="padding:0 16px 16px">
     <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px">DANGER ZONE</div>
     <button class="danger-btn" onclick="clearAllData()">🗑 CLEAR ALL DATA</button>
   </div>
@@ -537,6 +575,8 @@
     <div class="modal-body">
       <div class="field-lbl">Task Title</div>
       <input class="field-inp" id="task-title-inp" type="text" placeholder="e.g. Morning stretch"/>
+      <div class="field-lbl">Time <span style="color:var(--faint);font-size:10px;text-transform:none;letter-spacing:0">(optional)</span></div>
+      <input class="field-inp" id="task-time-inp" type="time" style="color-scheme:dark"/>
       <div class="field-lbl">Category</div>
       <div class="cat-select-row">
         <button class="cat-select-btn daily sel" id="cat-daily" onclick="selectCat('daily')">Daily</button>
@@ -597,7 +637,7 @@ function migrate(s) {
   let v = s.version || 1;
   if (v < 2) { s.mealCustom = {}; v = 2; }
   if (v < 3) { s.tasks = []; s.notes = []; s.calMonth = null; s.calSelDate = null; s.noteFilter = null; v = 3; }
-  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; v = 4; }
+  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; v = 4; }
   // Data hygiene: prune taskDone entries older than 90 days
   if (s.taskDone) {
     const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
@@ -646,6 +686,16 @@ const WORKOUTS = [
 
 const SHOPPING=[{category:"🥩 Protein",items:[{name:"Canned tuna (3 cans)",used:"Mon lunch, Thu lunch"},{name:"Canned sardines (1 tin)",used:"Thu lunch"},{name:"Canned chickpeas (2 cans)",used:"Fri lunch, Sun dinner"},{name:"Canned black beans (1 can)",used:"Wed lunch"},{name:"Red lentils (400g)",used:"Tue dinner"},{name:"Chicken thighs (4–6)",used:"Wed dinner"},{name:"Chicken breast",used:"Tue lunch"},{name:"Ground beef / mince (400g)",used:"Fri dinner"},{name:"Salmon fillet (1–2)",used:"Sat dinner"},{name:"Eggs (1 dozen)",used:"Multiple meals"},{name:"Greek yogurt (500g)",used:"Tue breakfast"},{name:"Peanut butter",used:"Wed breakfast, Sun breakfast"}]},{category:"🌾 Carbs & Grains",items:[{name:"Rolled oats (500g)",used:"Mon, Sun breakfast"},{name:"White rice (1kg)",used:"Multiple meals"},{name:"Spaghetti / pasta (500g)",used:"Thu dinner"},{name:"Flour tortillas",used:"Tue, Wed lunch"},{name:"Wholegrain bread",used:"Wed, Thu breakfast"},{name:"Crackers (whole grain)",used:"Thu lunch"},{name:"Granola (small bag)",used:"Tue breakfast"}]},{category:"🥦 Vegetables",items:[{name:"Broccoli (1 head)",used:"Fri dinner"},{name:"Carrots (3–4)",used:"Fri dinner"},{name:"Sweet potato (2)",used:"Sat, Sun dinner"},{name:"Cucumber (2)",used:"Mon, Fri lunch"},{name:"Tomatoes (4)",used:"Fri, Sat lunch"},{name:"Red onion (2)",used:"Fri lunch"},{name:"White / brown onion (3)",used:"Tue, Thu dinner"},{name:"Garlic (1 bulb)",used:"Multiple meals"},{name:"Spinach / mixed leaves",used:"Fri, Sat breakfast"},{name:"Bell pepper (2)",used:"Sat breakfast"},{name:"Frozen peas (bag)",used:"Mon dinner"}]},{category:"🍌 Fruit",items:[{name:"Bananas (5–6)",used:"Mon, Wed breakfast"},{name:"Frozen berries (bag)",used:"Tue, Sun breakfast"},{name:"Lemon (2)",used:"Fri, Sat"}]},{category:"🧀 Dairy",items:[{name:"Milk (1L)",used:"Sun oats, smoothie"},{name:"Shredded cheese (bag)",used:"Wed lunch"}]},{category:"🫙 Pantry & Sauces",items:[{name:"Soy sauce",used:"Multiple meals"},{name:"Olive oil",used:"Multiple meals"},{name:"Curry paste (jar)",used:"Sun dinner"},{name:"Canned coconut milk",used:"Sun dinner"},{name:"Canned tomatoes (2)",used:"Tue, Sat"},{name:"Tomato soup (2 cans)",used:"Sat lunch"},{name:"Honey",used:"Mon, Sun"},{name:"Sesame seeds",used:"Mon lunch"},{name:"Chia seeds",used:"Sun oats"},{name:"Chilli flakes",used:"Thu dinner"},{name:"Cumin (ground)",used:"Tue dinner"},{name:"Paprika (smoked)",used:"Wed dinner"},{name:"Hot sauce",used:"Tue, Sun lunch"},{name:"Ginger",used:"Fri dinner"}]}];
 
+const DEFAULT_MEALS_B = [
+  {name:"Mon",emoji:"🌅",breakfast:{name:"Banana Protein Pancakes",desc:"Mashed banana mixed with 2 eggs and a pinch of cinnamon, pan-fried into small pancakes",tags:["protein","cheap","quick"]},lunch:{name:"Egg & Rice Bowl",desc:"Fried egg over steamed rice with soy sauce, sesame oil and sliced spring onion",tags:["protein","carb","cheap","quick"]},dinner:{name:"Minestrone Soup",desc:"Canned tomatoes, kidney beans, pasta, carrot and celery simmered with garlic and Italian herbs",tags:["protein","carb","cheap"]}},
+  {name:"Tue",emoji:"🌅",breakfast:{name:"Avocado Toast",desc:"Wholegrain toast topped with mashed avocado, a squeeze of lemon, salt and chilli flakes",tags:["carb","cheap","quick"]},lunch:{name:"Tuna Pasta Salad",desc:"Cooked pasta with canned tuna, diced cucumber, cherry tomatoes and olive oil",tags:["protein","carb","cheap"]},dinner:{name:"Chicken Stir-fry Noodles",desc:"Egg noodles with sliced chicken, pak choi, soy sauce and ginger",tags:["protein","carb","cheap"]}},
+  {name:"Wed",emoji:"🌅",breakfast:{name:"Cottage Cheese & Fruit",desc:"Cottage cheese topped with mixed berries, a drizzle of honey and a handful of granola",tags:["protein","quick"]},lunch:{name:"Lentil & Veg Wrap",desc:"Cooked green lentils with roasted peppers, spinach and tahini in a flour tortilla",tags:["protein","carb","cheap"]},dinner:{name:"Baked Cod & Potatoes",desc:"Cod fillet baked with lemon, garlic and olive oil alongside roasted baby potatoes",tags:["protein","carb"]}},
+  {name:"Thu",emoji:"🌅",breakfast:{name:"Muesli & Milk",desc:"No-cook muesli with oats, dried fruit, seeds and cold milk. Soak overnight for best results",tags:["carb","cheap"]},lunch:{name:"Black Bean Soup",desc:"Canned black beans blended with onion, garlic, cumin and chicken stock. Serve with bread",tags:["protein","carb","cheap","quick"]},dinner:{name:"Turkey Mince Bolognese",desc:"Turkey mince with canned tomatoes, onion, garlic and Italian herbs over spaghetti",tags:["protein","carb","cheap"]}},
+  {name:"Fri",emoji:"🌅",breakfast:{name:"Egg Muffins",desc:"Whisked eggs with diced peppers, onion and cheese poured into a muffin tin and baked",tags:["protein","cheap"]},lunch:{name:"Mackerel & Crackers",desc:"Canned mackerel in tomato sauce on whole grain crackers with sliced tomato and cucumber",tags:["protein","cheap","quick"]},dinner:{name:"Sweet Potato & Chickpea Bake",desc:"Diced sweet potato and chickpeas tossed in olive oil, paprika and cumin, oven roasted",tags:["protein","carb","cheap"]}},
+  {name:"Sat",emoji:"🌅",breakfast:{name:"French Toast",desc:"Thick bread dipped in egg and milk mixture, pan-fried until golden. Top with honey or berries",tags:["protein","carb","cheap"]},lunch:{name:"Roasted Veg & Hummus Bowl",desc:"Roasted courgette, peppers and onion over rice with a generous dollop of hummus",tags:["protein","carb","cheap"]},dinner:{name:"Prawn Fried Rice",desc:"Day-old rice stir-fried with frozen prawns, egg, peas, soy sauce and sesame oil",tags:["protein","carb","cheap","quick"]}},
+  {name:"Sun",emoji:"🌅",breakfast:{name:"Big Breakfast Bowl",desc:"Scrambled eggs, sautéed spinach, halved cherry tomatoes and wholegrain toast",tags:["protein","carb","cheap"]},lunch:{name:"Spicy Noodle Soup",desc:"Ramen noodles in a broth made with soy sauce, chilli paste, garlic and a soft-boiled egg",tags:["protein","carb","cheap","quick"]},dinner:{name:"Lamb & Veg Stew",desc:"Diced lamb with potato, carrot and peas simmered in a rich tomato and herb broth",tags:["protein","carb"]}},
+];
+
 const EXERCISE_INFO={"Push-ups":{steps:["Start in a high plank — hands shoulder-width apart, body in a straight line from head to heels","Lower your chest to the floor by bending your elbows at roughly 45° from your body","Stop when your chest is 1–2cm from the floor, keeping your core tight","Push the floor away to return to the start — fully extend your arms"],note:"Common mistake: letting your hips sag or pike. Squeeze glutes and abs to stay rigid."},"Pike Push-ups":{steps:["Start in a downward dog — hips high, forming an inverted V","Bend your elbows and lower the top of your head toward the floor","Keep your hips high throughout — this targets shoulders, not chest","Press back up to the start, fully extending your arms"],note:"The higher your hips, the more it targets your shoulders."},"Incline Push-ups":{steps:["Place hands on an elevated surface — the higher, the easier","Keep your body in a straight line from head to heels","Lower your chest to the surface with control","Push back up to the start"],note:"Lower the surface height over time to increase difficulty."},"Wall / Regular Push-ups":{steps:["For wall: stand arm's length from a wall, place hands flat at chest height","Lean in and bend elbows to bring face close to wall","Push back to the start","For floor: follow standard push-up cues above"],note:"If wall push-ups feel too easy, move to incline or full push-ups."},"Plank Shoulder Taps":{steps:["Start in a high plank position","Lift one hand and tap the opposite shoulder — keep hips still","Return that hand and repeat other side — that's one rep","Actively resist any rotation by bracing your core hard"],note:"Slower is harder. Zero hip rotation is the goal."},"Bodyweight Squats":{steps:["Stand feet shoulder-width apart, toes turned out slightly","Sit back and down as if lowering onto a chair — chest tall","Descend until thighs are at least parallel to the floor","Drive through heels to stand, squeezing glutes at the top"],note:"Keep knees tracking over toes. If heels rise, work on ankle mobility."},"Reverse Lunges":{steps:["Stand tall, feet hip-width apart","Step one foot back and lower back knee toward the floor","Front shin roughly vertical, front thigh parallel to floor","Push through front heel to return to start, repeat other side"],note:"Keep your torso upright — don't lean forward."},"Glute Bridges":{steps:["Lie on your back, knees bent, feet flat on floor","Push through heels to lift hips until body forms a straight line","Squeeze glutes hard at the top for 1 second","Lower with control — don't let hips crash down"],note:"To progress: pause longer at top, or try single-leg."},"Glute Bridge Marches":{steps:["Get into a standard glute bridge with hips raised","Keeping hips level, lift one foot and bring knee toward chest","Lower that foot and lift the other — alternate like a slow march","Keep core braced — zero hip drop as you switch legs"],note:"Much harder than it looks. Return to standard bridges if hips drop."},"Hip Thrusts":{steps:["Sit on floor with upper back against a sturdy surface","Plant feet flat, knees bent at roughly 90°","Drive hips up by pushing through heels, squeeze glutes at top","Shoulders pivot on surface as hips rise — keep chin tucked"],note:"Larger range of motion than bridges. Should feel a full glute contraction at top."},"Hollow Body Hold":{steps:["Lie on your back and press lower back firmly into floor","Extend arms overhead and legs straight — raise both slightly off floor","Your body should form a shallow dish shape","Hold while breathing steadily — lower back stays down"],note:"If lower back lifts, raise legs higher or bend knees. Back contact is non-negotiable."},"Plank":{steps:["Place forearms on floor, elbows directly under shoulders","Extend legs back, weight on your toes","Body forms a straight line — no sagging hips, no raised backside","Look at the floor, neutral neck, breathe steadily"],note:"Squeeze everything — glutes, abs, quads. Think full-body tension, not just abs."},"Side Plank":{steps:["Lie on your side, prop up on one forearm — elbow under shoulder","Stack feet or stagger for stability","Lift hips to form a straight line from head to feet","Hold — keep top hip from drooping"],note:"Too hard? Bend your bottom knee. To progress: add a hip dip or raise top leg."},"Dead Bug":{steps:["Lie on back, arms pointing up, knees bent at 90° in the air","Press lower back into floor — keep it there throughout","Slowly extend one arm overhead while extending opposite leg","Return to start before repeating other side — move slowly"],note:"Lower back staying flat is the entire point. Reduce range if it arches."},"Mountain Climbers":{steps:["Start in a high plank — hands under shoulders","Drive one knee toward chest, then quickly switch legs","Keep hips down and level — don't let them bounce","Maintain a strong plank throughout"],note:"Slow = core exercise. Fast = cardio. Keep them controlled on light days."},"Bird Dog":{steps:["Start on all fours — hands under shoulders, knees under hips, back flat","Extend right arm forward and left leg back — both parallel to floor","Hold 2 seconds, hips level, back flat","Return to start and repeat opposite side"],note:"Lengthen your body rather than lifting high. Small and controlled beats large and sloppy."},"Superman Holds":{steps:["Lie face down, arms extended overhead, body flat","Simultaneously lift arms, chest, and legs by squeezing back and glutes","Hold the raised position for 2 seconds","Lower with control and repeat"],note:"Neutral neck — look at the floor. Movement comes from back and glutes, not neck."},"Light Walk / Jog in Place":{steps:["Walk or jog on the spot at a comfortable, easy pace","Lift knees gently with each step","Keep arms swinging naturally","Gradually increase pace over the first minute"],note:"This should feel genuinely easy — the goal is blood flow, not cardio."},"Cat-Cow Stretches":{steps:["Start on all fours, hands under shoulders, knees under hips","Cow: inhale, drop belly to floor, lift head and tailbone","Cat: exhale, round spine to ceiling, tuck chin and pelvis","Flow between the two slowly, linking movement to breath"],note:"Move as slowly as you like. Feel each vertebra move."},"Hip Flexor Stretch":{steps:["Kneel on one knee, other foot planted in front (lunge position)","Shift hips forward gently until you feel a stretch at front of back hip","Keep torso upright — don't lean forward","Hold steadily — no bouncing"],note:"Tight hip flexors from sitting cause lower back tension. A good stretch helps a lot."},"Child's Pose":{steps:["Kneel and sit back onto your heels","Extend arms forward on the floor, lower chest toward the ground","Let forehead rest on the floor","Breathe deeply — let your body relax with each exhale"],note:"Walk arms to one side for a lateral stretch too."},"Thread the Needle":{steps:["Start on all fours","Slide one arm under your body along the floor, rotating upper back","Let shoulder and ear rest on the floor — hold the stretch","Return to all fours and repeat other side"],note:"Great thoracic mobility drill. Let gravity do the work, don't force it."},"Leg Swings":{steps:["Stand next to wall, hold lightly for balance","Swing one leg forward and back in a controlled arc — gradually increase range","After 10 reps, swing same leg side to side across body","Repeat on other leg"],note:"Keep the swinging leg relaxed — let momentum do the work."},"Deep Breathing":{steps:["Lie on your back or sit comfortably","Inhale slowly through nose for 4 counts — belly rises first, then chest","Hold for 2 counts","Exhale slowly through mouth for 6 counts — let body soften"],note:"Deep breathing activates your rest-and-recovery mode. Even 5 minutes makes a difference."}};
 
 const WORKOUT_INFO={heavy:{title:"What is a Heavy Day?",body:"Heavy days are your primary strength sessions. You're pushing close to your limit — the last 1–2 reps should feel genuinely hard. This is where you build raw strength.",tips:[{icon:"⏱",text:"Rest 2–3 minutes fully between sets. Your muscles need it to perform the next set properly."},{icon:"📈",text:"When you hit the top of the rep range on all sets, progress: add a rep, a set, or advance the movement."},{icon:"🧘",text:"Warm up for 3–5 minutes before starting. Arm circles, leg swings, and a slow first set."}]},medium:{title:"What is a Medium Day?",body:"Medium days build volume and reinforce technique. The effort should feel controlled — you could do 2–3 more reps but you stop at the target. Focus on feeling the muscle work.",tips:[{icon:"⏱",text:"Rest 90 seconds between sets. Enough to recover, not enough to go cold."},{icon:"🎯",text:"Try a 2-second down, 1-second pause, 1-second up tempo to increase time under tension."},{icon:"📝",text:"Good day to notice and fix form issues when the load isn't maximal."}]},light:{title:"What is a Light Day?",body:"Light days keep you moving without wearing you down. Higher reps, lower effort — around 60–70% of your max. Promotes active recovery and builds your aerobic base.",tips:[{icon:"⏱",text:"Rest only 60 seconds. Keep the session moving with a light circuit feel."},{icon:"💨",text:"You should be able to hold a short conversation during sets. If gasping, slow down."},{icon:"🔄",text:"Light days reduce soreness from heavy/medium days and help you come back stronger."}]},recovery:{title:"What is Recovery Day?",body:"Recovery days are active movement to help your body repair. Light stretching and mobility reduces stiffness, improves flexibility, and keeps you consistent without adding fatigue.",tips:[{icon:"🌡",text:"Move gently — never stretch to the point of pain. A mild pull is fine."},{icon:"💧",text:"Drink plenty of water and eat enough protein. Recovery happens outside the workout."},{icon:"😴",text:"Prioritise sleep on recovery days. Most muscle repair happens during deep sleep."}]}};
@@ -661,7 +711,8 @@ function defaultState(){
   return{version:DATA_VERSION,woWeek:0,woDay:0,mlWeek:0,mlDay:0,activeTab:'workout',
     infoOpen:null,exInfoOpen:null,logs:{},mealLogs:{},shopChecks:{},mealCustom:{},
     tasks:[],notes:[],calMonth:null,calSelDate:null,noteFilter:null,
-    streakData:{},lastOpenedDate:null,lastBackupPrompt:null,taskDone:{}};
+    streakData:{},lastOpenedDate:null,lastBackupPrompt:null,taskDone:{},
+    mealRotation:'A'};
 }
 let S=loadState();
 function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));}
@@ -695,7 +746,18 @@ function switchTab(tab){
 // ═══════════════════════════════════════════════════
 // MEAL HELPERS
 // ═══════════════════════════════════════════════════
-function getMeal(di,slot){return S.mealCustom[di+'-'+slot]||DEFAULT_MEALS[di][slot];}
+function getActiveMeals() {
+  return S.mealRotation === 'B' ? DEFAULT_MEALS_B : DEFAULT_MEALS;
+}
+function getMeal(di,slot){
+  const key = di+'-'+slot+'-'+(S.mealRotation||'A');
+  return S.mealCustom[key] || S.mealCustom[di+'-'+slot] || getActiveMeals()[di][slot];
+}
+function toggleMealRotation(){
+  S.mealRotation = S.mealRotation === 'B' ? 'A' : 'B';
+  save(); renderMeals();
+  toast(`Switched to Week ${S.mealRotation} meal plan`);
+}
 
 // ═══════════════════════════════════════════════════
 // WORKOUT RENDER
@@ -781,13 +843,17 @@ function mlKey(w,d,slot){return`mw${w}-d${d}-${slot}`;}
 function mlDayDone(di){return['breakfast','lunch','dinner'].filter(s=>S.mealLogs[mlKey(S.mlWeek,di,s)]).length;}
 
 function renderMeals(){
-  const weekDone=DEFAULT_MEALS.reduce((_,__,i)=>_+mlDayDone(i),0);
+  const meals = getActiveMeals();
+  const weekDone=meals.reduce((_,__,i)=>_+mlDayDone(i),0);
   document.getElementById('ml-prog').style.width=Math.round((weekDone/21)*100)+'%';
   document.getElementById('ml-wk').textContent=S.mlWeek+1;
   const done=mlDayDone(S.mlDay);
   document.getElementById('ml-pct-lbl').textContent=`${done}/3`;
+  // Rotation badge
+  const badge=document.getElementById('meal-rotation-badge');
+  if(badge){badge.textContent=`WEEK ${S.mealRotation||'A'}`;badge.classList.toggle('week-b',S.mealRotation==='B');}
   const sel=document.getElementById('ml-day-sel');sel.innerHTML='';
-  DEFAULT_MEALS.forEach((d,i)=>{
+  meals.forEach((d,i)=>{
     const pd=mlDayDone(i),pct=Math.round((pd/3)*100),active=i===S.mlDay;
     const btn=document.createElement('button');
     btn.className='day-btn'+(active?' active':'');
@@ -800,7 +866,7 @@ function renderMeals(){
     <div class="dhc" style="background:#0d1a18;border-color:#1abc9c44;cursor:default">
       <div style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="dhe">🥗</div>
-        <div><div class="dht" style="color:#1abc9c">${DEFAULT_MEALS[S.mlDay].name}</div><div class="dhtitle">MEAL PLAN</div><div class="dhn">Tap a meal to mark it eaten · ✏️ to edit</div></div>
+        <div><div class="dht" style="color:#1abc9c">${meals[S.mlDay].name}</div><div class="dhtitle">MEAL PLAN</div><div class="dhn">Tap a meal to mark it eaten · ✏️ to edit</div></div>
         <div class="dpct"><div class="dpct-n" style="color:#1abc9c">${done}/3</div><div class="dpct-l">EATEN</div></div>
       </div>
     </div>`;
@@ -968,7 +1034,12 @@ function renderSchedule(){
   // Sort: undone first, then done
   const sorted=[...tasks].sort((a,b)=>{
     const ad=isTaskDone(a,selDate)?1:0,bd=isTaskDone(b,selDate)?1:0;
-    return ad-bd;
+    if(ad!==bd) return ad-bd;
+    // Sort by time if both have it
+    if(a.time&&b.time) return a.time.localeCompare(b.time);
+    if(a.time) return -1;
+    if(b.time) return 1;
+    return 0;
   });
 
   sorted.forEach(task=>{
@@ -982,6 +1053,7 @@ function renderSchedule(){
         <div class="task-title">${task.title}</div>
         <div class="task-meta">
           <span class="task-cat ${catColors[task.cat]}">${task.cat}</span>
+          ${task.time?`<span class="task-time-badge">🕐 ${task.time}</span>`:''}
           ${task.recurring&&task.cat!=='once'?'<span class="task-date">🔄 recurring</span>':''}
         </div>
       </div>
@@ -1036,8 +1108,10 @@ function toggleRecur(){taskRecur=!taskRecur;document.getElementById('recur-toggl
 function saveTask(){
   const title=document.getElementById('task-title-inp').value.trim();
   if(!title){toast('Please enter a task title','#e74c3c');return;}
+  const time=document.getElementById('task-time-inp').value||null;
   const task={
     id:Date.now().toString(),title,cat:taskCat,
+    time,
     recurring:taskCat==='once'?false:taskRecur,
     dueDate:S.calSelDate||todayStr(),
     createdAt:new Date().toISOString()
@@ -1051,8 +1125,8 @@ function saveTask(){
 let editingNoteId=null;
 
 function renderNotes(){
+  const query = (document.getElementById('note-search')?.value||'').trim().toLowerCase();
   const allTags=[...new Set(S.notes.flatMap(n=>n.tags||[]))].sort();
-  // Tag filter bar
   const bar=document.getElementById('tag-filter-bar');bar.innerHTML='';
   const allBtn=document.createElement('button');
   allBtn.className='tag-filter-btn'+(S.noteFilter===null?' active':'');
@@ -1068,15 +1142,20 @@ function renderNotes(){
   });
 
   let notes=[...S.notes];
-  if(S.noteFilter)notes=notes.filter(n=>(n.tags||[]).includes(S.noteFilter));
-  // Pinned first
+  if(S.noteFilter) notes=notes.filter(n=>(n.tags||[]).includes(S.noteFilter));
+  if(query) notes=notes.filter(n=>{
+    const title=(n.title||'').toLowerCase();
+    const body=(n.body||'').replace(/<[^>]+>/g,' ').toLowerCase();
+    const tags=(n.tags||[]).join(' ').toLowerCase();
+    return title.includes(query)||body.includes(query)||tags.includes(query);
+  });
   notes.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
 
   document.getElementById('notes-count').textContent=`${notes.length} note${notes.length!==1?'s':''}`;
   const list=document.getElementById('notes-list');list.innerHTML='';
 
   if(notes.length===0){
-    list.innerHTML=`<div class="empty-state"><div class="es-icon">📝</div>No notes yet.<br>Tap + NEW NOTE to start.</div>`;
+    list.innerHTML=`<div class="empty-state"><div class="es-icon">${query?'🔍':'📝'}</div>${query?`No notes match "${query}"`:'No notes yet.<br>Tap + NEW NOTE to start.'}</div>`;
     return;
   }
 
@@ -1205,8 +1284,38 @@ function renderDataPage(){
     <div class="data-stat-item"><div class="data-stat-num">${totalMeals}</div><div class="data-stat-lbl">Meals Tracked</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${totalTasks}</div><div class="data-stat-lbl">Tasks Done</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${totalNotes}</div><div class="data-stat-lbl">Notes</div></div>
-    <div class="data-stat-item"><div class="data-stat-num">${weeks}</div><div class="data-stat-lbl">Weeks Active</div></div>
+    <div class="data-stat-item"><div class="data-stat-num">${calcStreak()}</div><div class="data-stat-lbl">Day Streak</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${Object.keys(S.mealCustom).length}</div><div class="data-stat-lbl">Custom Meals</div></div>`;
+  // Chart — last 8 weeks completion %
+  const chartEl = document.getElementById('chart-bars');
+  if (!chartEl) return;
+  chartEl.innerHTML = '';
+  const weekPcts = [];
+  for (let w = Math.max(0, S.woWeek - 7); w <= S.woWeek; w++) {
+    const pct = Math.round(WORKOUTS.reduce((a,_,i) => {
+      const d = WORKOUTS[i];
+      const total = d.exercises.reduce((s,e)=>s+e.sets,0);
+      const done  = d.exercises.reduce((s,e)=>{
+        for(let set=1;set<=e.sets;set++) if(S.logs[`w${w}-d${i}-${e.id}-s${set}`]?.done) s++;
+        return s;
+      },0);
+      return a + (total>0?(done/total)*100:0);
+    }, 0) / 7);
+    weekPcts.push({ w, pct });
+  }
+  const max = Math.max(...weekPcts.map(x=>x.pct), 1);
+  weekPcts.forEach(({w, pct}) => {
+    const isCurrent = w === S.woWeek;
+    const barH = Math.max(3, Math.round((pct / max) * 52));
+    const label = `W${w+1}`;
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-bar-wrap';
+    wrap.innerHTML = `
+      <div class="chart-bar-pct">${pct>0?pct+'%':''}</div>
+      <div class="chart-bar${isCurrent?' current':''}" style="height:${barH}px"></div>
+      <div class="chart-bar-lbl">${label}</div>`;
+    chartEl.appendChild(wrap);
+  });
 }
 
 function exportData(){
