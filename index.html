@@ -307,11 +307,36 @@
     .note-tag-pill{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 9px;font-size:11px;color:#aaa;font-family:var(--fd);font-weight:700;letter-spacing:0.5px;}
     .note-tag-pill-del{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:0;line-height:1;-webkit-tap-highlight-color:transparent;}
 
+    /* PREV REPS */
+    .prev-reps{font-size:10px;color:var(--faint);margin-left:4px;white-space:nowrap;font-style:italic;}
+
+    /* BACKUP PROMPT BANNER */
+    #backup-prompt{
+      display:none;position:fixed;top:calc(var(--sat) + 8px);left:12px;right:12px;z-index:400;
+      background:#2d2410;border:1px solid #f39c1244;border-radius:12px;
+      padding:12px 14px;align-items:center;gap:10px;
+    }
+    #backup-prompt.show{display:flex;}
+    .backup-prompt-text{flex:1;font-size:12px;color:#f0e0c0;line-height:1.4;}
+    .backup-prompt-text b{font-family:var(--fd);font-size:13px;font-weight:700;color:#f39c12;display:block;margin-bottom:2px;}
+    .backup-now-btn{background:#f39c12;border:none;color:#07070f;border-radius:8px;padding:7px 12px;font-size:11px;font-weight:800;font-family:var(--fd);letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+    .backup-dismiss-btn{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 2px;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
   </style>
 </head>
 <body>
+
+<!-- BACKUP PROMPT -->
+<div id="backup-prompt">
+  <div class="backup-prompt-text">
+    <b>⚠ Back up your data</b>
+    You haven't opened the app in a few days. Export a backup to keep your progress safe.
+  </div>
+  <button class="backup-now-btn" onclick="exportData();document.getElementById('backup-prompt').classList.remove('show')">Back up</button>
+  <button class="backup-dismiss-btn" onclick="document.getElementById('backup-prompt').classList.remove('show')">×</button>
+</div>
 
 <!-- TAB BAR -->
 <div id="tab-bar">
@@ -350,6 +375,7 @@
         </div>
       </div>
     </div>
+    <div id="wo-streak" style="font-family:var(--fd);font-size:12px;font-weight:700;color:#f39c12;letter-spacing:0.5px;margin-bottom:6px;min-height:16px"></div>
     <div class="prog-lbl"><span style="color:var(--muted);font-size:10px;letter-spacing:1px">WEEK PROGRESS</span><span id="wo-pct-lbl" style="font-size:10px;color:#aaa">0%</span></div>
     <div class="prog-track"><div class="prog-fill wk-fill" id="wo-prog" style="width:0%"></div></div>
   </div>
@@ -565,12 +591,32 @@
 // ═══════════════════════════════════════════════════
 // DATA VERSION & MIGRATION
 // ═══════════════════════════════════════════════════
-const DATA_VERSION = 3;
+const DATA_VERSION = 4;
 
 function migrate(s) {
   let v = s.version || 1;
   if (v < 2) { s.mealCustom = {}; v = 2; }
   if (v < 3) { s.tasks = []; s.notes = []; s.calMonth = null; s.calSelDate = null; s.noteFilter = null; v = 3; }
+  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; v = 4; }
+  // Data hygiene: prune taskDone entries older than 90 days
+  if (s.taskDone) {
+    const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    Object.keys(s.taskDone).forEach(k => {
+      const parts = k.split('-');
+      if (parts.length >= 4) {
+        const dateStr = parts.slice(1).join('-');
+        if (new Date(dateStr).getTime() < cutoff) delete s.taskDone[k];
+      }
+    });
+  }
+  // Data hygiene: prune workout logs older than 12 weeks
+  if (s.logs && s.woWeek > 12) {
+    const minWeek = s.woWeek - 12;
+    Object.keys(s.logs).forEach(k => {
+      const m = k.match(/^w(\d+)-/);
+      if (m && parseInt(m[1]) < minWeek) delete s.logs[k];
+    });
+  }
   s.version = DATA_VERSION;
   return s;
 }
@@ -614,7 +660,8 @@ function loadState(){
 function defaultState(){
   return{version:DATA_VERSION,woWeek:0,woDay:0,mlWeek:0,mlDay:0,activeTab:'workout',
     infoOpen:null,exInfoOpen:null,logs:{},mealLogs:{},shopChecks:{},mealCustom:{},
-    tasks:[],notes:[],calMonth:null,calSelDate:null,noteFilter:null};
+    tasks:[],notes:[],calMonth:null,calSelDate:null,noteFilter:null,
+    streakData:{},lastOpenedDate:null,lastBackupPrompt:null,taskDone:{}};
 }
 let S=loadState();
 function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));}
@@ -664,9 +711,13 @@ function woWeekPct(){return Math.round(WORKOUTS.reduce((a,_,i)=>a+woDayPct(i),0)
 
 function renderWorkout(){
   const pct=woWeekPct();
+  const streak=calcStreak();
   document.getElementById('wo-prog').style.width=pct+'%';
   document.getElementById('wo-pct-lbl').textContent=pct+'%';
   document.getElementById('wo-wk').textContent=S.woWeek+1;
+  // Streak badge in header
+  const streakEl=document.getElementById('wo-streak');
+  if(streakEl){streakEl.textContent=streak>0?`🔥 ${streak} day streak`:'';}
   // Day selector
   const sel=document.getElementById('wo-day-sel');sel.innerHTML='';
   WORKOUTS.forEach((d,i)=>{
@@ -709,10 +760,15 @@ function renderWorkout(){
     card.style.setProperty('--dc',d.color);
     const stepsHTML=info?`<div class="ex-how${isOpen?' open':''}"><div class="ex-how-title">How to perform</div><ul class="ex-how-steps">${info.steps.map((s,i)=>`<li data-n="${i+1}">${s}</li>`).join('')}</ul>${info.note?`<div class="ex-how-note">💡 ${info.note}</div>`:''}</div>`:'';
     let rows='';
-    for(let s=1;s<=ex.sets;s++){const k=wKey(S.woWeek,S.woDay,ex.id,s),e=S.logs[k]||{};rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><input class="set-inp" type="text" placeholder="reps / time" value="${e.reps||''}" data-k="${k}"/></div>`;}
+    for(let s=1;s<=ex.sets;s++){
+      const k=wKey(S.woWeek,S.woDay,ex.id,s),e=S.logs[k]||{};
+      const prev=getPrevReps(S.woDay,ex.id,s);
+      const prevHint=prev?`<span class="prev-reps">Last: ${prev}</span>`:'';
+      rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><input class="set-inp" type="text" placeholder="${prev?'Last: '+prev:'reps / time'}" value="${e.reps||''}" data-k="${k}"/>${prevHint}</div>`;
+    }
     card.innerHTML=`<div class="ex-top" id="extop-${infoKey}"><div><div class="ex-name">${ex.name}</div><div class="ex-meta">${ex.sets} sets · ${ex.target}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="ex-badge${all?' done':''}" style="${all?`background:${d.color}`:''}"> ${done}/${ex.sets}</div>${info?`<button class="ex-info-btn${isOpen?' open':''}" id="exbtn-${infoKey}">▼</button>`:''}</div></div>${stepsHTML}${rows}`;
     if(info)card.querySelector(`#extop-${infoKey}`).addEventListener('click',()=>{S.exInfoOpen=(S.exInfoOpen===infoKey)?null:infoKey;save();renderWorkout();});
-    card.querySelectorAll('.set-chk').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const k=b.dataset.k;if(!S.logs[k])S.logs[k]={};S.logs[k].done=!S.logs[k].done;save();renderWorkout();}));
+    card.querySelectorAll('.set-chk').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const k=b.dataset.k;if(!S.logs[k])S.logs[k]={};S.logs[k].done=!S.logs[k].done;save();renderWorkout();checkDayCompletion();if(navigator.vibrate)navigator.vibrate(8);}));
     card.querySelectorAll('.set-inp').forEach(inp=>inp.addEventListener('input',()=>{const k=inp.dataset.k;if(!S.logs[k])S.logs[k]={};S.logs[k].reps=inp.value;save();}));
     el.appendChild(card);
   });
@@ -1187,6 +1243,122 @@ function dlText(text,filename){
 }
 
 // ═══════════════════════════════════════════════════
+// PHASE 1: TODAY AUTO-SELECT
+// ═══════════════════════════════════════════════════
+function todayWorkoutDayIdx() {
+  // Mon=0 ... Sun=6, matching WORKOUTS array order
+  const dow = new Date().getDay(); // 0=Sun
+  return dow === 0 ? 6 : dow - 1;
+}
+
+function autoSelectToday() {
+  S.woDay = todayWorkoutDayIdx();
+  // Also sync meal day to today
+  const dow = new Date().getDay();
+  S.mlDay = dow === 0 ? 6 : dow - 1;
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 1: STREAK
+// ═══════════════════════════════════════════════════
+function getDayCompletionKey(dateStr) {
+  return 'done-' + dateStr;
+}
+
+function markTodayActive() {
+  const today = todayStr();
+  if (!S.streakData) S.streakData = {};
+  // Mark today as visited (not completed — completion is tracked separately)
+  S.lastOpenedDate = today;
+}
+
+function isDayCompleted(dateStr) {
+  // A day is "completed" if any set was logged as done on that workout week/day
+  // We use streakData which we update whenever a full day's workout is done
+  return !!(S.streakData && S.streakData[dateStr]);
+}
+
+function checkDayCompletion() {
+  // Called after any set is checked — if all sets done for today mark streak
+  const todayIdx = todayWorkoutDayIdx();
+  const pct = woDayPct(todayIdx);
+  if (pct === 100) {
+    const today = todayStr();
+    if (!S.streakData) S.streakData = {};
+    if (!S.streakData[today]) {
+      S.streakData[today] = true;
+      save();
+      showCelebration();
+    }
+  }
+}
+
+function calcStreak() {
+  if (!S.streakData) return 0;
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const ds = d.toISOString().slice(0, 10);
+    if (S.streakData[ds]) {
+      streak++;
+    } else if (i > 0) {
+      break; // gap found — streak ends
+    }
+  }
+  return streak;
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 1: CELEBRATION
+// ═══════════════════════════════════════════════════
+function showCelebration() {
+  const streak = calcStreak();
+  const msgs = [
+    '🔥 Day complete! Keep it up!',
+    '💪 Crushed it! Great work!',
+    '⚡ All done! You showed up!',
+    '🏆 Full workout complete!',
+  ];
+  const msg = msgs[Math.floor(Math.random() * msgs.length)];
+  const streakMsg = streak > 1 ? ` ${streak} day streak!` : '';
+  toast(msg + streakMsg, '#f39c12');
+  if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 1: PREVIOUS SESSION REPS
+// ═══════════════════════════════════════════════════
+function getPrevReps(dayIdx, exId, setNum) {
+  // Look back up to 4 weeks for a previous log for this exercise/set
+  for (let w = S.woWeek - 1; w >= Math.max(0, S.woWeek - 4); w--) {
+    const k = wKey(w, dayIdx, exId, setNum);
+    const entry = S.logs[k];
+    if (entry && entry.reps) return entry.reps;
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 1: BACKUP PROMPT
+// ═══════════════════════════════════════════════════
+function checkBackupPrompt() {
+  const today = todayStr();
+  const last = S.lastOpenedDate;
+  if (!last) return;
+  const daysSince = Math.floor((new Date(today) - new Date(last)) / (1000 * 60 * 60 * 24));
+  if (daysSince >= 5 && S.lastBackupPrompt !== today) {
+    S.lastBackupPrompt = today;
+    save();
+    setTimeout(() => {
+      const el = document.getElementById('backup-prompt');
+      if (el) el.classList.add('show');
+    }, 1500);
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // WEEK NAV & RESETS
 // ═══════════════════════════════════════════════════
 document.getElementById('wo-prev').onclick=()=>{S.woWeek=Math.max(0,S.woWeek-1);save();renderWorkout();};
@@ -1214,6 +1386,15 @@ document.getElementById('ml-reset-btn').onclick=()=>{
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
+
+// Auto-select today if this is a fresh open (not returning to a specific tab)
+if (!S.lastOpenedDate || S.lastOpenedDate !== todayStr()) {
+  autoSelectToday();
+}
+checkBackupPrompt();
+markTodayActive();
+save();
+
 switchTab(S.activeTab);
 renderWorkout();
 renderMeals();
