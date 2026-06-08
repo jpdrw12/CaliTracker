@@ -360,6 +360,31 @@
     }
 
     /* REST TIMER */
+    #rest-timer{
+      position:fixed;bottom:calc(var(--sab) + 75px);left:50%;
+      transform:translateX(-50%) translateY(100px);
+      background:#0d0d1a;border:1px solid var(--surface2);
+      border-radius:20px;padding:12px 20px;
+      display:flex;align-items:center;gap:14px;
+      z-index:300;transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow:0 8px 32px rgba(0,0,0,0.6);min-width:220px;
+    }
+    #rest-timer.show{transform:translateX(-50%) translateY(0);}
+    .rest-timer-ring{
+      width:44px;height:44px;flex-shrink:0;position:relative;
+    }
+    .rest-timer-ring svg{transform:rotate(-90deg);}
+    .rest-timer-ring circle{transition:stroke-dashoffset 1s linear;}
+    .rest-timer-num{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      font-family:var(--fd);font-size:14px;font-weight:800;color:var(--teal);
+    }
+    .rest-timer-label{flex:1;}
+    .rest-timer-title{font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:0.5px;}
+    .rest-timer-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+    .rest-timer-skip{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:8px;-webkit-tap-highlight-color:transparent;font-family:var(--fb);}
+    .rest-timer-skip:active{color:var(--text);}
+
     /* THEME TOGGLE */
     :root.light{
       --bg:#f5f5f0;--surface:#ffffff;--surface2:#e8e8e0;--border:#ddd;
@@ -377,6 +402,32 @@
     }
     .theme-toggle-label{font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:0.5px;color:var(--text);}
     .theme-toggle-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+    /* ONBOARDING */
+    #onboarding{
+      display:none;position:fixed;inset:0;z-index:999;
+      background:var(--bg);flex-direction:column;align-items:center;
+      justify-content:center;padding:32px 24px;text-align:center;
+    }
+    #onboarding.show{display:flex;}
+    .ob-logo{font-size:52px;margin-bottom:8px;}
+    .ob-title{font-family:var(--fd);font-size:32px;font-weight:800;letter-spacing:2px;margin-bottom:6px;}
+    .ob-sub{font-size:13px;color:var(--muted);margin-bottom:36px;line-height:1.6;}
+    .ob-tabs{display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;margin-bottom:36px;}
+    .ob-tab{
+      display:flex;align-items:center;gap:14px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;padding:14px 16px;text-align:left;
+    }
+    .ob-tab-icon{font-size:24px;flex-shrink:0;}
+    .ob-tab-title{font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:0.5px;margin-bottom:2px;}
+    .ob-tab-sub{font-size:11px;color:var(--muted);line-height:1.4;}
+    .ob-start-btn{
+      width:100%;max-width:320px;padding:15px;border-radius:14px;
+      background:var(--teal);color:#07070f;border:none;
+      font-family:var(--fd);font-size:16px;font-weight:800;letter-spacing:1px;
+      cursor:pointer;-webkit-tap-highlight-color:transparent;
+    }
 
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
@@ -422,6 +473,38 @@
 </head>
 <body>
 
+<!-- REST TIMER -->
+<div id="rest-timer">
+  <div class="rest-timer-ring">
+    <svg width="44" height="44" viewBox="0 0 44 44">
+      <circle cx="22" cy="22" r="18" fill="none" stroke="#1a1a2e" stroke-width="4"/>
+      <circle id="rest-timer-arc" cx="22" cy="22" r="18" fill="none" stroke="#1abc9c" stroke-width="4"
+        stroke-dasharray="113" stroke-dashoffset="0" stroke-linecap="round"/>
+    </svg>
+    <div class="rest-timer-num" id="rest-timer-num">0</div>
+  </div>
+  <div class="rest-timer-label">
+    <div class="rest-timer-title">REST</div>
+    <div class="rest-timer-sub" id="rest-timer-sub">Recovering...</div>
+  </div>
+  <button class="rest-timer-skip" onclick="skipRestTimer()">Skip</button>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-logo">💪</div>
+  <div class="ob-title">CALITRACK</div>
+  <div class="ob-sub">Your all-in-one fitness suite.<br>Everything you need, locally stored on your device.</div>
+  <div class="ob-tabs">
+    <div class="ob-tab"><div class="ob-tab-icon">💪</div><div><div class="ob-tab-title">WORKOUT</div><div class="ob-tab-sub">7-day H/M/L calisthenics rotation with exercise guides and streak tracking</div></div></div>
+    <div class="ob-tab"><div class="ob-tab-icon">🥗</div><div><div class="ob-tab-title">MEALS</div><div class="ob-tab-sub">Two weekly meal plans with shopping list export and custom meal editing</div></div></div>
+    <div class="ob-tab"><div class="ob-tab-icon">📅</div><div><div class="ob-tab-title">SCHEDULE</div><div class="ob-tab-sub">Calendar view with daily, weekly, monthly and one-off tasks</div></div></div>
+    <div class="ob-tab"><div class="ob-tab-icon">📝</div><div><div class="ob-tab-title">NOTES</div><div class="ob-tab-sub">Rich text notes with tags, pins and full-text search</div></div></div>
+    <div class="ob-tab"><div class="ob-tab-icon">💾</div><div><div class="ob-tab-title">DATA</div><div class="ob-tab-sub">Progress charts, backup and restore — your data never leaves your device</div></div></div>
+  </div>
+  <button class="ob-start-btn" onclick="closeOnboarding()">GET STARTED</button>
+</div>
+
 <!-- BACKUP PROMPT -->
 <div id="backup-prompt">
   <div class="backup-prompt-text">
@@ -453,7 +536,7 @@
     <div class="ob-step"><span class="ob-step-icon">📝</span><div><div class="ob-step-title">NOTES</div><div class="ob-step-sub">Rich text notes with tags, pins and full-text search.</div></div></div>
     <div class="ob-step"><span class="ob-step-icon">💾</span><div><div class="ob-step-title">DATA</div><div class="ob-step-sub">All data lives on your device. Export anytime to keep it safe.</div></div></div>
   </div>
-  <button class="ob-start-btn" onclick="closeOnboarding()">GET STARTED →</button>
+  <button class="ob-start-btn" onclick="finishOnboarding()">GET STARTED →</button>
 </div>
 
 <!-- TAB BAR -->
