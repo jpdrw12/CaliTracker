@@ -314,7 +314,7 @@
     .chart-wrap{padding:0 16px 12px;}
     .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
     .chart-title{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
-    .chart-bars{display:flex;align-items:flex-end;gap:5px;height:100px;}
+    .chart-bars{display:flex;align-items:flex-end;gap:5px;height:60px;}
     .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
     .chart-bar{width:100%;border-radius:4px 4px 0 0;background:var(--surface2);transition:height 0.4s;min-height:3px;position:relative;}
     .chart-bar.current{background:var(--teal);}
@@ -428,6 +428,17 @@
       font-family:var(--fd);font-size:16px;font-weight:800;letter-spacing:1px;
       cursor:pointer;-webkit-tap-highlight-color:transparent;
     }
+
+    /* AUTO-BACKUP */
+    .backup-status{display:flex;align-items:center;gap:10px;padding:13px 17px;border-bottom:1px solid var(--border);}
+    .backup-status-icon{font-size:22px;flex-shrink:0;}
+    .backup-status-text{flex:1;}
+    .backup-status-title{font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:0.5px;color:var(--text);}
+    .backup-status-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
+    .backup-status-action{background:var(--teal);border:none;color:#07070f;border-radius:8px;padding:7px 13px;font-family:var(--fd);font-size:11px;font-weight:800;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;flex-shrink:0;}
+    .backup-status-action.danger{background:#1a0f0f;border:1px solid #3d1515;color:var(--red);}
+    .backup-hint{font-size:11px;color:var(--faint);padding:10px 17px 13px;line-height:1.6;border-top:1px solid var(--border);}
+    .backup-hint a{color:var(--teal);text-decoration:none;}
 
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
@@ -688,6 +699,22 @@
     </div>
   </div>
   <div style="padding:0 16px 12px">
+    <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px">AUTO-BACKUP</div>
+    <div class="data-card" id="auto-backup-card">
+      <div class="backup-status" id="backup-status-row">
+        <div class="backup-status-icon" id="backup-status-icon">📂</div>
+        <div class="backup-status-text">
+          <div class="backup-status-title" id="backup-status-title">Not configured</div>
+          <div class="backup-status-sub" id="backup-status-sub">Set up auto-backup to save your data to a local file automatically on every change.</div>
+        </div>
+        <button class="backup-status-action" id="backup-status-btn" onclick="handleAutoBackupBtn()">Set up</button>
+      </div>
+      <div class="backup-hint" id="backup-hint">
+        💡 Tip: point this at a <b>Google Drive</b>, <b>Dropbox</b> or <b>OneDrive</b> folder for automatic cross-device sync — no account needed.
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 16px 12px">
     <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px">BACKUP & RESTORE</div>
     <div class="data-card">
       <div class="data-row" onclick="exportData()">
@@ -827,7 +854,7 @@ function migrate(s) {
   let v = s.version || 1;
   if (v < 2) { s.mealCustom = {}; v = 2; }
   if (v < 3) { s.tasks = []; s.notes = []; s.calMonth = null; s.calSelDate = null; s.noteFilter = null; v = 3; }
-  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; v = 4; }
+  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; s.autoBackupFileName = null; s.lastAutoBackup = null; v = 4; }
   // Data hygiene: prune taskDone entries older than 90 days
   if (s.taskDone) {
     const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
@@ -902,10 +929,11 @@ function defaultState(){
     infoOpen:null,exInfoOpen:null,logs:{},mealLogs:{},shopChecks:{},mealCustom:{},
     tasks:[],notes:[],calMonth:null,calSelDate:null,noteFilter:null,
     streakData:{},lastOpenedDate:null,lastBackupPrompt:null,taskDone:{},
-    mealRotation:'A',theme:'dark',onboardingDone:false};
+    mealRotation:'A',theme:'dark',onboardingDone:false,
+    autoBackupFileName:null,lastAutoBackup:null};
 }
 let S=loadState();
-function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));}
+function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));autoBackup();}
 
 // ═══════════════════════════════════════════════════
 // TOAST
@@ -1528,6 +1556,7 @@ function renderDataPage(){
       <div class="chart-bar-lbl">${label}</div>`;
     chartEl.appendChild(wrap);
   });
+  updateAutoBackupUI();
 }
 
 function exportData(){
@@ -1858,6 +1887,170 @@ function closeOnboarding() {
 }
 
 // ═══════════════════════════════════════════════════
+// AUTO-BACKUP (File System Access API)
+// ═══════════════════════════════════════════════════
+const FS_SUPPORTED = 'showSaveFilePicker' in window;
+const IDB_DB_NAME  = 'calitrack-fs';
+const IDB_STORE    = 'handles';
+const IDB_KEY      = 'backup-handle';
+
+// Open IndexedDB for storing file handles
+function openIDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(IDB_DB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+async function idbGet(key) {
+  const db = await openIDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+async function idbSet(key, val) {
+  const db = await openIDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    const req = tx.objectStore(IDB_STORE).put(val, key);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+async function idbDelete(key) {
+  const db = await openIDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    const req = tx.objectStore(IDB_STORE).delete(key);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+// Request permission and return handle, or null
+async function getVerifiedHandle() {
+  const handle = await idbGet(IDB_KEY);
+  if (!handle) return null;
+  const perm = await handle.queryPermission({ mode: 'readwrite' });
+  if (perm === 'granted') return handle;
+  const req = await handle.requestPermission({ mode: 'readwrite' });
+  return req === 'granted' ? handle : null;
+}
+
+// Write backup to file — called on every save (debounced)
+let autoBackupTimer = null;
+async function autoBackup() {
+  if (!FS_SUPPORTED) return;
+  clearTimeout(autoBackupTimer);
+  autoBackupTimer = setTimeout(async () => {
+    try {
+      const handle = await getVerifiedHandle();
+      if (!handle) return;
+      const writable = await handle.createWritable();
+      await writable.write(JSON.stringify({ ...S, autoBackedUpAt: new Date().toISOString() }, null, 2));
+      await writable.close();
+      S.lastAutoBackup = new Date().toISOString();
+      localStorage.setItem('calitrack_data', JSON.stringify(S));
+      updateAutoBackupUI();
+    } catch (err) {
+      // Fail silently — localStorage is always source of truth
+    }
+  }, 2000);
+}
+
+// Set up a new backup file via save picker
+async function setupAutoBackup() {
+  if (!FS_SUPPORTED) return;
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'calitrack-backup.json',
+      types: [{ description: 'CaliTrack Backup', accept: { 'application/json': ['.json'] } }],
+    });
+    await idbSet(IDB_KEY, handle);
+    S.autoBackupFileName = handle.name;
+    S.lastAutoBackup = null;
+    save();
+    toast('✓ Auto-backup configured');
+    updateAutoBackupUI();
+    // Write immediately
+    autoBackup();
+  } catch (err) {
+    if (err.name !== 'AbortError') toast('Failed to set up backup', '#e74c3c');
+  }
+}
+
+async function disableAutoBackup() {
+  if (!confirm('Disable auto-backup? Your existing backup file will not be deleted.')) return;
+  await idbDelete(IDB_KEY);
+  S.autoBackupFileName = null;
+  S.lastAutoBackup = null;
+  save();
+  updateAutoBackupUI();
+  toast('Auto-backup disabled');
+}
+
+function handleAutoBackupBtn() {
+  if (S.autoBackupFileName) {
+    // Already configured — offer to write now or disable
+    autoBackup();
+    toast('✓ Backup written');
+  } else {
+    setupAutoBackup();
+  }
+}
+
+async function updateAutoBackupUI() {
+  if (!FS_SUPPORTED) {
+    document.getElementById('backup-status-icon').textContent  = 'ℹ️';
+    document.getElementById('backup-status-title').textContent = 'Not available on this browser';
+    document.getElementById('backup-status-sub').textContent   = 'Auto-backup uses the File System Access API, which requires Chrome, Edge, or Firefox on desktop or Android.';
+    document.getElementById('backup-status-btn').style.display = 'none';
+    document.getElementById('backup-hint').style.display       = 'none';
+    return;
+  }
+
+  const hasHandle = !!(await idbGet(IDB_KEY));
+  const lastBackup = S.lastAutoBackup
+    ? new Date(S.lastAutoBackup).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+    : null;
+
+  if (hasHandle && S.autoBackupFileName) {
+    document.getElementById('backup-status-icon').textContent  = '✅';
+    document.getElementById('backup-status-title').textContent = S.autoBackupFileName;
+    document.getElementById('backup-status-sub').textContent   = lastBackup ? `Last saved ${lastBackup}` : 'Ready — will save on next data change';
+    const btn = document.getElementById('backup-status-btn');
+    btn.textContent = 'Save now';
+    btn.className   = 'backup-status-action';
+    // Add disable link if not present
+    if (!document.getElementById('backup-disable-btn')) {
+      const dis = document.createElement('button');
+      dis.id        = 'backup-disable-btn';
+      dis.textContent = 'Disable';
+      dis.className = 'backup-status-action danger';
+      dis.style.marginLeft = '6px';
+      dis.onclick   = disableAutoBackup;
+      btn.parentElement.appendChild(dis);
+    }
+  } else {
+    document.getElementById('backup-status-icon').textContent  = '📂';
+    document.getElementById('backup-status-title').textContent = 'Not configured';
+    document.getElementById('backup-status-sub').textContent   = 'Set up auto-backup to save your data to a local file automatically on every change.';
+    const btn = document.getElementById('backup-status-btn');
+    btn.textContent = 'Set up';
+    btn.className   = 'backup-status-action';
+    const dis = document.getElementById('backup-disable-btn');
+    if (dis) dis.remove();
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // WEEK NAV & RESETS
 // ═══════════════════════════════════════════════════
 document.getElementById('wo-prev').onclick=()=>{S.woWeek=Math.max(0,S.woWeek-1);save();renderWorkout();};
@@ -1898,6 +2091,7 @@ renderWorkout();
 renderMeals();
 updateSchedBadge();
 checkOnboarding();
+updateAutoBackupUI();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
