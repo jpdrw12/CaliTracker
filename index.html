@@ -540,6 +540,51 @@
 
     /* TABLET BAR — add today tab */
 
+    /* PHASE 5 — WORKOUT IMPROVEMENTS */
+    .wo-today-btn{
+      background:#1abc9c22;border:1px solid #1abc9c44;color:var(--teal);
+      border-radius:20px;padding:3px 10px;font-size:9px;font-weight:700;
+      font-family:var(--fd);letter-spacing:1px;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;margin-left:6px;
+      flex-shrink:0;white-space:nowrap;
+    }
+    .day-btn.today-day{border-color:#1abc9c66 !important;}
+    .day-btn.today-day .dn{color:var(--teal) !important;}
+    .ex-custom-badge{
+      font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;
+      background:#1a2d1a;color:#4ec94e;font-family:var(--fd);letter-spacing:0.5px;
+      margin-left:4px;
+    }
+    .ex-edit-btn{
+      background:none;border:none;color:var(--faint);font-size:13px;
+      cursor:pointer;padding:0 2px;-webkit-tap-highlight-color:transparent;
+    }
+    .ex-edit-btn:active{color:var(--teal);}
+    .session-notes-wrap{padding:0 16px 12px;}
+    .session-notes-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:12px;overflow:hidden;
+    }
+    .session-notes-hdr{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    }
+    .session-notes-title{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+    .session-notes-arrow{font-size:13px;color:var(--faint);transition:transform 0.2s;}
+    .session-notes-arrow.open{transform:rotate(180deg);color:var(--teal);}
+    .session-notes-body{display:none;border-top:1px solid var(--border);}
+    .session-notes-body.open{display:block;}
+    .session-notes-inp{
+      width:100%;background:none;border:none;color:var(--text);
+      padding:12px 14px;font-size:13px;line-height:1.6;
+      font-family:var(--fb);outline:none;resize:none;min-height:80px;
+      -webkit-appearance:none;
+    }
+    /* EXERCISE EDIT MODAL */
+    .ex-edit-targets{display:flex;gap:8px;margin-top:5px;}
+    .ex-edit-target-inp{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 10px;font-size:14px;outline:none;font-family:var(--fb);-webkit-appearance:none;text-align:center;}
+    .ex-edit-target-inp:focus{border-color:var(--teal);}
+
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
 
@@ -734,6 +779,25 @@
   </div>
 </div>
 
+<!-- ══ EXERCISE EDIT MODAL ══ -->
+<div class="modal-overlay" id="ex-edit-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div><div class="modal-title" id="ex-edit-modal-title">EDIT EXERCISE</div></div>
+      <button class="modal-close" onclick="closeExEdit()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-lbl">Sets</div>
+      <input class="field-inp" id="ex-edit-sets" type="number" min="1" max="10" inputmode="numeric" placeholder="e.g. 4"/>
+      <div class="field-lbl">Rep / Time Target</div>
+      <input class="field-inp" id="ex-edit-target" type="text" placeholder="e.g. 8–10 or 45 sec"/>
+      <button class="save-btn-teal" onclick="saveExEdit()">SAVE</button>
+      <button class="reset-sm-btn" onclick="resetExEdit()">Reset to Default</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ WORKOUT PAGE ══ -->
 <div class="page active" id="page-workout">
   <div class="ph">
@@ -755,6 +819,17 @@
   <div class="day-sel" id="wo-day-sel"></div>
   <div id="wo-day-hdr"></div>
   <div id="exercises"></div>
+  <div class="session-notes-wrap">
+    <div class="session-notes-card">
+      <div class="session-notes-hdr" id="session-notes-toggle">
+        <div class="session-notes-title">📓 Session Notes</div>
+        <div class="session-notes-arrow" id="session-notes-arrow">▼</div>
+      </div>
+      <div class="session-notes-body" id="session-notes-body">
+        <textarea class="session-notes-inp" id="session-notes-inp" placeholder="How did it feel? Any notes on form, energy, PRs..."></textarea>
+      </div>
+    </div>
+  </div>
   <button class="reset-btn" id="wo-reset-btn">Reset Day</button>
 </div>
 
@@ -1015,7 +1090,7 @@ function migrate(s) {
   let v = s.version || 1;
   if (v < 2) { s.mealCustom = {}; v = 2; }
   if (v < 3) { s.tasks = []; s.notes = []; s.calMonth = null; s.calSelDate = null; s.noteFilter = null; v = 3; }
-  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; s.autoBackupFileName = null; s.lastAutoBackup = null; v = 4; }
+  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; s.autoBackupFileName = null; s.lastAutoBackup = null; s.exCustom = {}; s.sessionNotes = {}; v = 4; }
   // Data hygiene: prune taskDone entries older than 90 days
   if (s.taskDone) {
     const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
@@ -1091,7 +1166,8 @@ function defaultState(){
     tasks:[],notes:[],calMonth:null,calSelDate:null,noteFilter:null,
     streakData:{},lastOpenedDate:null,lastBackupPrompt:null,taskDone:{},
     mealRotation:'A',theme:'dark',onboardingDone:false,
-    autoBackupFileName:null,lastAutoBackup:null};
+    autoBackupFileName:null,lastAutoBackup:null,
+    exCustom:{},sessionNotes:{}};
 }
 let S=loadState();
 function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));autoBackup();}
@@ -1143,6 +1219,102 @@ function toggleMealRotation(){
 // ═══════════════════════════════════════════════════
 // WORKOUT RENDER
 // ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// PHASE 5: ISO WEEK
+// ═══════════════════════════════════════════════════
+function getISOWeek(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+}
+
+function getCurrentISOWeekIndex() {
+  // Returns 0-based week index from start of current year
+  return getISOWeek(new Date()) - 1;
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 5: CUSTOM EXERCISE SETS/REPS
+// ═══════════════════════════════════════════════════
+let exEditCtx = null;
+
+function getExCustomKey(dayIdx, exId) {
+  return `ex-${dayIdx}-${exId}`;
+}
+
+function getExData(dayIdx, ex) {
+  const custom = (S.exCustom || {})[getExCustomKey(dayIdx, ex.id)];
+  if (custom) return { sets: custom.sets, target: custom.target, isCustom: true };
+  return { sets: ex.sets, target: ex.target, isCustom: false };
+}
+
+function openExEdit(dayIdx, ex) {
+  exEditCtx = { dayIdx, ex };
+  const data = getExData(dayIdx, ex);
+  document.getElementById('ex-edit-modal-title').textContent = ex.name.toUpperCase();
+  document.getElementById('ex-edit-sets').value   = data.sets;
+  document.getElementById('ex-edit-target').value = data.target;
+  document.getElementById('ex-edit-modal').classList.add('open');
+}
+
+function closeExEdit() { document.getElementById('ex-edit-modal').classList.remove('open'); }
+
+function saveExEdit() {
+  if (!exEditCtx) return;
+  const sets   = parseInt(document.getElementById('ex-edit-sets').value);
+  const target = document.getElementById('ex-edit-target').value.trim();
+  if (!sets || sets < 1 || !target) { toast('Please fill in both fields', '#e74c3c'); return; }
+  if (!S.exCustom) S.exCustom = {};
+  S.exCustom[getExCustomKey(exEditCtx.dayIdx, exEditCtx.ex.id)] = { sets, target };
+  save(); closeExEdit(); renderWorkout(); toast('✓ Exercise updated');
+}
+
+function resetExEdit() {
+  if (!exEditCtx) return;
+  if (!confirm('Reset to default sets and reps?')) return;
+  if (S.exCustom) delete S.exCustom[getExCustomKey(exEditCtx.dayIdx, exEditCtx.ex.id)];
+  save(); closeExEdit(); renderWorkout(); toast('Exercise reset to default');
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 5: SESSION NOTES
+// ═══════════════════════════════════════════════════
+function sessionNoteKey(weekOffset, dayIdx) {
+  return `snote-w${weekOffset}-d${dayIdx}`;
+}
+
+function loadSessionNote() {
+  const key  = sessionNoteKey(S.woWeek, S.woDay);
+  const val  = (S.sessionNotes || {})[key] || '';
+  const inp  = document.getElementById('session-notes-inp');
+  if (inp) inp.value = val;
+}
+
+function initSessionNotes() {
+  const toggle = document.getElementById('session-notes-toggle');
+  const body   = document.getElementById('session-notes-body');
+  const arrow  = document.getElementById('session-notes-arrow');
+  const inp    = document.getElementById('session-notes-inp');
+  if (!toggle || !body || !arrow || !inp) return;
+
+  toggle.addEventListener('click', () => {
+    const open = body.classList.toggle('open');
+    arrow.classList.toggle('open', open);
+    if (open) inp.focus();
+  });
+
+  inp.addEventListener('input', () => {
+    const key = sessionNoteKey(S.woWeek, S.woDay);
+    if (!S.sessionNotes) S.sessionNotes = {};
+    S.sessionNotes[key] = inp.value;
+    save();
+  });
+
+  loadSessionNote();
+}
+
 function wKey(w,d,id,s){return`w${w}-d${d}-${id}-s${s}`;}
 function woDayPct(di){
   const d=WORKOUTS[di];
@@ -1153,26 +1325,51 @@ function woDayPct(di){
 function woWeekPct(){return Math.round(WORKOUTS.reduce((a,_,i)=>a+woDayPct(i),0)/7);}
 
 function renderWorkout(){
+  // Preserve scroll position
+  const pageEl = document.getElementById('page-workout');
+  const scrollY = pageEl ? pageEl.scrollTop : 0;
+
   const pct=woWeekPct();
   const streak=calcStreak();
   document.getElementById('wo-prog').style.width=pct+'%';
   document.getElementById('wo-pct-lbl').textContent=pct+'%';
   document.getElementById('wo-wk').textContent=S.woWeek+1;
-  // Streak badge in header
   const streakEl=document.getElementById('wo-streak');
   if(streakEl){streakEl.textContent=streak>0?`🔥 ${streak} day streak`:'';}
-  // Day selector
-  const sel=document.getElementById('wo-day-sel');sel.innerHTML='';
+
+  // Day selector — mark today
+  const todayIdx = todayWorkoutDayIdx();
+  const sel=document.getElementById('wo-day-sel');
+
+  // Remove any existing today-btn wrapper
+  const existing = document.getElementById('today-jump-wrap');
+  if(existing) existing.remove();
+
+  sel.innerHTML='';
+
+  // Today button if viewing a different day
+  if(S.woDay !== todayIdx){
+    const wrap = document.createElement('div');
+    wrap.id = 'today-jump-wrap';
+    wrap.style.cssText = 'display:flex;align-items:center;padding:8px 16px 0;';
+    const todayBtn = document.createElement('button');
+    todayBtn.className = 'wo-today-btn';
+    todayBtn.textContent = '⤎ Today';
+    todayBtn.onclick = () => { S.woDay = todayIdx; save(); renderWorkout(); };
+    wrap.appendChild(todayBtn);
+    sel.parentElement.insertBefore(wrap, sel);
+  }
+
   WORKOUTS.forEach((d,i)=>{
-    const p=woDayPct(i),active=i===S.woDay;
+    const p=woDayPct(i),active=i===S.woDay,isToday=i===todayIdx;
     const btn=document.createElement('button');
-    btn.className='day-btn'+(active?' active':'');
+    btn.className='day-btn'+(active?' active':'')+(isToday?' today-day':'');
     btn.style.cssText=`--dc:${d.color};--dbg:${d.bg}`;
-    btn.innerHTML=`<div class="de">${d.emoji}</div><div class="dn">${d.name}</div><div class="dt">${d.label}</div>${p>0?`<div class="mb-track"><div class="mb-fill" style="width:${p}%;background:${d.color}"></div></div>`:'<div style="height:8px"></div>'}`;
+    btn.innerHTML=`<div class="de">${d.emoji}</div><div class="dn">${d.name}${isToday?'<span style="font-size:7px;color:var(--teal);display:block">TODAY</span>':''}</div><div class="dt">${d.label}</div>${p>0?`<div class="mb-track"><div class="mb-fill" style="width:${p}%;background:${d.color}"></div></div>`:'<div style="height:8px"></div>'}`;
     btn.onclick=()=>{S.woDay=i;save();renderWorkout();};
     sel.appendChild(btn);
   });
-  // Day header
+
   const d=WORKOUTS[S.woDay],p=woDayPct(S.woDay);
   const info=WORKOUT_INFO[d.type],isOpen=S.infoOpen===S.woDay;
   document.getElementById('wo-day-hdr').innerHTML=`
@@ -1192,42 +1389,63 @@ function renderWorkout(){
   document.getElementById('dhc-card').addEventListener('click',()=>{
     S.infoOpen=(S.infoOpen===S.woDay)?null:S.woDay;save();renderWorkout();
   });
-  // Exercises
+
   const el=document.getElementById('exercises');el.innerHTML='';
   WORKOUTS[S.woDay].exercises.forEach(ex=>{
-    const done=Array.from({length:ex.sets},(_,i)=>S.logs[wKey(S.woWeek,S.woDay,ex.id,i+1)]?.done?1:0).reduce((a,b)=>a+b,0);
-    const all=done===ex.sets,infoKey=S.woDay+'-'+ex.id,isOpen=S.exInfoOpen===infoKey;
+    const exData=getExData(S.woDay,ex);
+    const done=Array.from({length:exData.sets},(_,i)=>S.logs[wKey(S.woWeek,S.woDay,ex.id,i+1)]?.done?1:0).reduce((a,b)=>a+b,0);
+    const all=done===exData.sets,infoKey=S.woDay+'-'+ex.id,isOpen=S.exInfoOpen===infoKey;
     const info=EXERCISE_INFO[ex.name];
     const card=document.createElement('div');
     card.className='ex-card'+(all?' done':'');
     card.style.setProperty('--dc',d.color);
     const stepsHTML=info?`<div class="ex-how${isOpen?' open':''}"><div class="ex-how-title">How to perform</div><ul class="ex-how-steps">${info.steps.map((s,i)=>`<li data-n="${i+1}">${s}</li>`).join('')}</ul>${info.note?`<div class="ex-how-note">💡 ${info.note}</div>`:''}</div>`:'';
     let rows='';
-    for(let s=1;s<=ex.sets;s++){
+    for(let s=1;s<=exData.sets;s++){
       const k=wKey(S.woWeek,S.woDay,ex.id,s),e=S.logs[k]||{};
       const prev=getPrevReps(S.woDay,ex.id,s);
       const prevHint=prev?`<span class="prev-reps">Last: ${prev}</span>`:'';
-      rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><input class="set-inp" type="text" placeholder="${prev?'Last: '+prev:'reps / time'}" value="${e.reps||''}" data-k="${k}"/>${prevHint}</div>`;
+      rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><input class="set-inp" inputmode="numeric" type="text" placeholder="${prev?'Last: '+prev:'reps / time'}" value="${e.reps||''}" data-k="${k}"/>${prevHint}</div>`;
     }
-    card.innerHTML=`<div class="ex-top" id="extop-${infoKey}"><div><div class="ex-name">${ex.name}</div><div class="ex-meta">${ex.sets} sets · ${ex.target}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="ex-badge${all?' done':''}" style="${all?`background:${d.color}`:''}"> ${done}/${ex.sets}</div>${info?`<button class="ex-info-btn${isOpen?' open':''}" id="exbtn-${infoKey}">▼</button>`:''}</div></div>${stepsHTML}${rows}`;
-    if(info)card.querySelector(`#extop-${infoKey}`).addEventListener('click',()=>{S.exInfoOpen=(S.exInfoOpen===infoKey)?null:infoKey;save();renderWorkout();});
+    const customBadge=exData.isCustom?`<span class="ex-custom-badge">custom</span>`:'';
+    card.innerHTML=`
+      <div class="ex-top" id="extop-${infoKey}">
+        <div><div class="ex-name">${ex.name}${customBadge}</div><div class="ex-meta">${exData.sets} sets · ${exData.target}</div></div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div class="ex-badge${all?' done':''}" style="${all?`background:${d.color}`:''}">${done}/${exData.sets}</div>
+          <button class="ex-edit-btn" title="Edit">⚙</button>
+          ${info?`<button class="ex-info-btn${isOpen?' open':''}" id="exbtn-${infoKey}">▼</button>`:''}
+        </div>
+      </div>${stepsHTML}${rows}`;
+    if(info)card.querySelector(`#extop-${infoKey}`).addEventListener('click',e=>{
+      if(e.target.classList.contains('ex-edit-btn'))return;
+      S.exInfoOpen=(S.exInfoOpen===infoKey)?null:infoKey;save();renderWorkout();
+    });
+    card.querySelector('.ex-edit-btn').addEventListener('click',e=>{
+      e.stopPropagation();openExEdit(S.woDay,ex);
+    });
     card.querySelectorAll('.set-chk').forEach(b=>b.addEventListener('click',e=>{
       e.stopPropagation();
       const k=b.dataset.k;if(!S.logs[k])S.logs[k]={};
-      const wasUnchecked = !S.logs[k].done;
+      const wasUnchecked=!S.logs[k].done;
       S.logs[k].done=!S.logs[k].done;
       save();renderWorkout();checkDayCompletion();
       if(navigator.vibrate)navigator.vibrate(8);
-      // Start rest timer when checking a set (not unchecking)
-      if(wasUnchecked && S.logs[k].done) {
-        const restSecs = REST_TIMES[WORKOUTS[S.woDay].type] || 90;
-        startRestTimer(restSecs);
+      if(wasUnchecked&&S.logs[k].done){
+        const restSecs=REST_TIMES[WORKOUTS[S.woDay].type]||90;
+        if(restSecs>0)startRestTimer(restSecs);
       }
     }));
-    card.querySelectorAll('.set-inp').forEach(inp=>inp.addEventListener('input',()=>{const k=inp.dataset.k;if(!S.logs[k])S.logs[k]={};S.logs[k].reps=inp.value;save();}));
+    card.querySelectorAll('.set-inp').forEach(inp=>inp.addEventListener('input',()=>{
+      const k=inp.dataset.k;if(!S.logs[k])S.logs[k]={};S.logs[k].reps=inp.value;save();
+    }));
     el.appendChild(card);
   });
+
+  loadSessionNote();
+  if(pageEl&&scrollY)requestAnimationFrame(()=>{pageEl.scrollTop=scrollY;});
 }
+
 
 // ═══════════════════════════════════════════════════
 // MEAL RENDER
@@ -2475,9 +2693,10 @@ document.getElementById('ml-reset-btn').onclick=()=>{
 };
 
 // MODAL BACKDROPS
-['shop-modal','meal-modal','task-modal','quickadd-modal'].forEach(id=>{
+['shop-modal','meal-modal','task-modal','quickadd-modal','ex-edit-modal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');});
 });
+initSessionNotes();
 
 // ═══════════════════════════════════════════════════
 // INIT
