@@ -604,6 +604,45 @@
       -webkit-tap-highlight-color:transparent;
     }
 
+    /* PHASE 7 — BODY & PROGRESS TRACKING */
+    .body-log-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+    .body-log-row:last-child{border-bottom:none;}
+    .body-log-date{font-size:11px;color:var(--muted);width:72px;flex-shrink:0;font-family:var(--fd);font-weight:700;letter-spacing:0.5px;}
+    .body-log-val{font-family:var(--fd);font-size:16px;font-weight:800;flex:1;}
+    .body-log-delta{font-size:10px;font-weight:700;font-family:var(--fd);}
+    .body-log-delta.up{color:var(--red);}
+    .body-log-delta.down{color:var(--green);}
+    .body-log-del{background:none;border:none;color:var(--faint);font-size:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0 2px;}
+    .body-log-del:active{color:var(--red);}
+    .body-section-tabs{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none;}
+    .body-section-tabs::-webkit-scrollbar{display:none;}
+    .body-tab-btn{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.2s;}
+    .body-tab-btn.active{background:#1abc9c22;border-color:var(--teal);color:var(--teal);}
+    .body-chart-wrap{padding:0 16px 10px;}
+    .body-chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+    .body-chart-title{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+    .body-chart-latest{font-size:20px;font-weight:800;color:var(--teal);font-family:var(--fd);}
+    .body-chart-svg{width:100%;height:80px;overflow:visible;}
+    .body-chart-line{fill:none;stroke:var(--teal);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .body-chart-area{fill:url(#bodyGrad);opacity:0.3;}
+    .body-chart-dot{fill:var(--teal);}
+    .pr-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:8px;}
+    .pr-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .pr-ex-name{font-family:var(--fd);font-size:14px;font-weight:800;letter-spacing:0.5px;}
+    .pr-val{font-family:var(--fd);font-size:20px;font-weight:800;color:var(--yellow);}
+    .pr-meta{font-size:10px;color:var(--muted);}
+    .pr-del{background:none;border:none;color:var(--faint);font-size:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .add-entry-row{display:flex;gap:8px;padding:0 16px 10px;}
+    .add-entry-inp{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:15px;outline:none;font-family:var(--fb);-webkit-appearance:none;inputmode:decimal;}
+    .add-entry-inp:focus{border-color:var(--teal);}
+    .add-entry-btn{background:var(--teal);border:none;color:#07070f;border-radius:10px;padding:10px 16px;font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+    .meas-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 10px;}
+    .meas-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+    .meas-card-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:var(--fd);font-weight:700;margin-bottom:4px;}
+    .meas-card-val{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--text);}
+    .meas-card-unit{font-size:11px;color:var(--muted);margin-left:2px;}
+    .meas-card-date{font-size:10px;color:var(--faint);margin-top:2px;}
+
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
 
@@ -728,6 +767,9 @@
   <button class="tab-btn" id="tab-schedule" onclick="switchTab('schedule')">
     <span class="ti">📅</span><span class="tl">Schedule</span>
     <span class="tb" id="sched-badge"></span>
+  </button>
+  <button class="tab-btn" id="tab-body" onclick="switchTab('body')">
+    <span class="ti">📊</span><span class="tl">Body</span>
   </button>
   <button class="tab-btn" id="tab-notes" onclick="switchTab('notes')">
     <span class="ti">📝</span><span class="tl">Notes</span>
@@ -907,6 +949,92 @@
       <button class="add-task-btn" onclick="openAddTask()">+ ADD TASK</button>
     </div>
     <div id="tasks-list"></div>
+  </div>
+</div>
+
+<!-- ══ BODY PAGE ══ -->
+<div class="page" id="page-body">
+  <div class="ph">
+    <div class="ph-row">
+      <div><div class="ph-lbl">Tracking</div><div class="ph-title">BODY</div></div>
+    </div>
+  </div>
+  <!-- Section tabs -->
+  <div class="body-section-tabs">
+    <button class="body-tab-btn active" id="btab-weight" onclick="switchBodyTab('weight')">⚖️ Weight</button>
+    <button class="body-tab-btn" id="btab-measurements" onclick="switchBodyTab('measurements')">📏 Measurements</button>
+    <button class="body-tab-btn" id="btab-prs" onclick="switchBodyTab('prs')">🏆 PRs</button>
+  </div>
+  <!-- Weight section -->
+  <div id="body-weight-section">
+    <div class="body-chart-wrap">
+      <div class="body-chart-card" id="weight-chart-card">
+        <div class="body-chart-title">
+          <span>WEIGHT LOG</span>
+          <span class="body-chart-latest" id="weight-latest"></span>
+        </div>
+        <svg class="body-chart-svg" id="weight-chart-svg">
+          <defs>
+            <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1abc9c" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#1abc9c" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+    <div class="add-entry-row">
+      <input class="add-entry-inp" id="weight-inp" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 75.5"/>
+      <select class="add-entry-inp" id="weight-unit" style="width:80px;flex:none">
+        <option value="kg">kg</option>
+        <option value="lbs">lbs</option>
+      </select>
+      <button class="add-entry-btn" onclick="logWeight()">LOG</button>
+    </div>
+    <div style="padding:0 16px">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:var(--fd);font-weight:700">HISTORY</div>
+      <div class="data-card"><div id="weight-history"></div></div>
+    </div>
+  </div>
+  <!-- Measurements section -->
+  <div id="body-measurements-section" style="display:none">
+    <div class="meas-grid" id="meas-grid"></div>
+    <div style="padding:0 16px 10px">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:var(--fd);font-weight:700">LOG MEASUREMENT</div>
+      <div class="data-card">
+        <div style="padding:12px 14px">
+          <div class="field-lbl">Body Part</div>
+          <div class="cat-select-row" style="flex-wrap:wrap">
+            <button class="cat-select-btn sel" id="meas-waist" onclick="selectMeasType('waist')">Waist</button>
+            <button class="cat-select-btn" id="meas-chest" onclick="selectMeasType('chest')">Chest</button>
+            <button class="cat-select-btn" id="meas-arms" onclick="selectMeasType('arms')">Arms</button>
+            <button class="cat-select-btn" id="meas-hips" onclick="selectMeasType('hips')">Hips</button>
+            <button class="cat-select-btn" id="meas-thighs" onclick="selectMeasType('thighs')">Thighs</button>
+          </div>
+          <div class="field-lbl" style="margin-top:12px">Value (cm)</div>
+          <div class="add-entry-row" style="padding:5px 0 0">
+            <input class="add-entry-inp" id="meas-inp" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 82.5"/>
+            <button class="add-entry-btn" onclick="logMeasurement()">LOG</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- PRs section -->
+  <div id="body-prs-section" style="display:none">
+    <div style="padding:0 16px 10px">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:var(--fd);font-weight:700">PERSONAL RECORDS</div>
+      <div id="pr-list"></div>
+      <div class="data-card" style="margin-top:8px">
+        <div style="padding:12px 14px">
+          <div class="field-lbl">Exercise</div>
+          <input class="field-inp" id="pr-ex-inp" type="text" placeholder="e.g. Push-ups"/>
+          <div class="field-lbl" style="margin-top:10px">Record</div>
+          <input class="field-inp" id="pr-val-inp" type="text" placeholder="e.g. 35 reps or 60 sec"/>
+          <button class="save-btn-teal" onclick="logPR()" style="margin-top:12px">SAVE PR</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1143,7 +1271,7 @@ function migrate(s) {
   let v = s.version || 1;
   if (v < 2) { s.mealCustom = {}; v = 2; }
   if (v < 3) { s.tasks = []; s.notes = []; s.calMonth = null; s.calSelDate = null; s.noteFilter = null; v = 3; }
-  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; s.autoBackupFileName = null; s.lastAutoBackup = null; s.exCustom = {}; s.sessionNotes = {}; v = 4; }
+  if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; s.autoBackupFileName = null; s.lastAutoBackup = null; s.exCustom = {}; s.sessionNotes = {}; s.weightLog = []; s.measurements = {}; s.prs = []; s.bodyTab = 'weight'; v = 4; }
   // Data hygiene: prune taskDone entries older than 90 days
   if (s.taskDone) {
     const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
@@ -1220,7 +1348,8 @@ function defaultState(){
     streakData:{},lastOpenedDate:null,lastBackupPrompt:null,taskDone:{},
     mealRotation:'A',theme:'dark',onboardingDone:false,
     autoBackupFileName:null,lastAutoBackup:null,
-    exCustom:{},sessionNotes:{}};
+    exCustom:{},sessionNotes:{},
+    weightLog:[],measurements:{},prs:[],bodyTab:'weight'};
 }
 let S=loadState();
 function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));autoBackup();}
@@ -1240,7 +1369,7 @@ function toast(msg,color='#1abc9c'){
 // ═══════════════════════════════════════════════════
 function switchTab(tab){
   S.activeTab=tab;
-  ['today','workout','meals','schedule','notes','data'].forEach(t=>{
+  ['today','workout','meals','schedule','body','notes','data'].forEach(t=>{
     document.getElementById('page-'+t).classList.toggle('active',t===tab);
     document.getElementById('tab-'+t).classList.toggle('active',t===tab);
   });
@@ -1250,6 +1379,7 @@ function switchTab(tab){
   if(tab==='notes')renderNotes();
   if(tab==='data')renderDataPage();
   if(tab==='today')renderToday();
+  if(tab==='body')renderBodyPage();
   save();
 }
 
@@ -2048,12 +2178,15 @@ function renderDataPage(){
   const weeks=S.woWeek+1;
   const totalTasks=Object.values(S.taskDone||{}).filter(Boolean).length;
   const totalNotes=S.notes.length;
+  const bs = getBodyStats();
   document.getElementById('stat-grid').innerHTML=`
     <div class="data-stat-item"><div class="data-stat-num">${totalSets}</div><div class="data-stat-lbl">Sets Logged</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${totalMeals}</div><div class="data-stat-lbl">Meals Tracked</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${totalTasks}</div><div class="data-stat-lbl">Tasks Done</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${totalNotes}</div><div class="data-stat-lbl">Notes</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${calcStreak()}</div><div class="data-stat-lbl">Day Streak</div></div>
+    <div class="data-stat-item"><div class="data-stat-num">${bs.weightEntries}</div><div class="data-stat-lbl">Weight Entries</div></div>
+    <div class="data-stat-item"><div class="data-stat-num">${bs.prs}</div><div class="data-stat-lbl">PRs Logged</div></div>
     <div class="data-stat-item"><div class="data-stat-num">${Object.keys(S.mealCustom).length}</div><div class="data-stat-lbl">Custom Meals</div></div>`;
   // Chart — last 8 weeks completion %
   const chartEl = document.getElementById('chart-bars');
@@ -2818,6 +2951,193 @@ function saveQuickAdd() {
     toast('✓ Note added');
   }
   save(); closeQuickAdd(); renderToday(); updateSchedBadge();
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 7: BODY & PROGRESS TRACKING
+// ═══════════════════════════════════════════════════
+let activeMeasType = 'waist';
+
+function switchBodyTab(tab) {
+  S.bodyTab = tab;
+  ['weight','measurements','prs'].forEach(t => {
+    document.getElementById('body-'+t+'-section').style.display = t===tab?'block':'none';
+    document.getElementById('btab-'+t).classList.toggle('active', t===tab);
+  });
+  save();
+}
+
+function renderBodyPage() {
+  switchBodyTab(S.bodyTab||'weight');
+  renderWeightChart();
+  renderMeasGrid();
+  renderPRList();
+}
+
+// ── WEIGHT LOG ──
+function logWeight() {
+  const val = parseFloat(document.getElementById('weight-inp').value);
+  const unit = document.getElementById('weight-unit').value;
+  if (!val || val <= 0) { toast('Enter a valid weight', '#e74c3c'); return; }
+  if (!S.weightLog) S.weightLog = [];
+  S.weightLog.push({ date: todayStr(), val, unit, ts: Date.now() });
+  S.weightLog.sort((a,b) => a.date.localeCompare(b.date));
+  document.getElementById('weight-inp').value = '';
+  save(); renderWeightChart(); toast('✓ Weight logged');
+}
+
+function renderWeightChart() {
+  if (!S.weightLog) S.weightLog = [];
+  const log = S.weightLog.slice(-12); // last 12 entries
+
+  // Latest value
+  const latestEl = document.getElementById('weight-latest');
+  if (log.length > 0) {
+    const last = log[log.length-1];
+    latestEl.textContent = `${last.val} ${last.unit}`;
+  } else {
+    latestEl.textContent = '—';
+  }
+
+  // SVG chart
+  const svg = document.getElementById('weight-chart-svg');
+  svg.innerHTML = `<defs><linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1abc9c" stop-opacity="0.5"/><stop offset="100%" stop-color="#1abc9c" stop-opacity="0"/></linearGradient></defs>`;
+  if (log.length < 2) {
+    svg.innerHTML += `<text x="50%" y="50%" text-anchor="middle" fill="#444" font-size="11" font-family="Barlow,sans-serif">Log at least 2 entries to see chart</text>`;
+  } else {
+    const W = 280, H = 72;
+    const vals = log.map(e => e.val);
+    const min = Math.min(...vals) * 0.995;
+    const max = Math.max(...vals) * 1.005;
+    const px = (i) => (i/(log.length-1))*W;
+    const py = (v) => H - ((v-min)/(max-min||1))*H;
+    const pts = log.map((e,i) => `${px(i)},${py(e.val)}`).join(' ');
+    const areaD = `M${px(0)},${H} ` + log.map((e,i) => `L${px(i)},${py(e.val)}`).join(' ') + ` L${px(log.length-1)},${H} Z`;
+    svg.innerHTML += `
+      <defs><linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1abc9c" stop-opacity="0.5"/><stop offset="100%" stop-color="#1abc9c" stop-opacity="0"/></linearGradient></defs>
+      <path d="${areaD}" fill="url(#bodyGrad)"/>
+      <polyline points="${pts}" class="body-chart-line"/>
+      ${log.map((e,i)=>`<circle cx="${px(i)}" cy="${py(e.val)}" r="3" class="body-chart-dot"/>`).join('')}`;
+  }
+
+  // History list
+  const hist = document.getElementById('weight-history');
+  if (!hist) return;
+  hist.innerHTML = '';
+  const reversed = [...S.weightLog].reverse().slice(0,10);
+  if (reversed.length === 0) {
+    hist.innerHTML = '<div class="today-empty">No entries yet. Log your weight above.</div>';
+    return;
+  }
+  reversed.forEach((entry, i) => {
+    const prev = S.weightLog[S.weightLog.length - 1 - i - 1];
+    let deltaHTML = '';
+    if (prev && prev.unit === entry.unit) {
+      const diff = (entry.val - prev.val).toFixed(1);
+      if (diff > 0) deltaHTML = `<span class="body-log-delta up">▲ ${diff}</span>`;
+      else if (diff < 0) deltaHTML = `<span class="body-log-delta down">▼ ${Math.abs(diff)}</span>`;
+    }
+    const row = document.createElement('div');
+    row.className = 'body-log-row';
+    row.innerHTML = `
+      <div class="body-log-date">${new Date(entry.date+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric'})}</div>
+      <div class="body-log-val">${entry.val} <span style="font-size:11px;color:var(--muted)">${entry.unit}</span></div>
+      ${deltaHTML}
+      <button class="body-log-del" data-ts="${entry.ts}">×</button>`;
+    row.querySelector('.body-log-del').onclick = () => {
+      S.weightLog = S.weightLog.filter(e => e.ts !== entry.ts);
+      save(); renderWeightChart();
+    };
+    hist.appendChild(row);
+  });
+}
+
+// ── MEASUREMENTS ──
+const MEAS_TYPES = ['waist','chest','arms','hips','thighs'];
+
+function selectMeasType(t) {
+  activeMeasType = t;
+  MEAS_TYPES.forEach(m => document.getElementById('meas-'+m).classList.toggle('sel', m===t));
+}
+
+function logMeasurement() {
+  const val = parseFloat(document.getElementById('meas-inp').value);
+  if (!val || val <= 0) { toast('Enter a valid measurement', '#e74c3c'); return; }
+  if (!S.measurements) S.measurements = {};
+  if (!S.measurements[activeMeasType]) S.measurements[activeMeasType] = [];
+  S.measurements[activeMeasType].push({ date: todayStr(), val, ts: Date.now() });
+  document.getElementById('meas-inp').value = '';
+  save(); renderMeasGrid(); toast(`✓ ${activeMeasType} logged`);
+}
+
+function renderMeasGrid() {
+  if (!S.measurements) S.measurements = {};
+  const grid = document.getElementById('meas-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  MEAS_TYPES.forEach(type => {
+    const entries = S.measurements[type] || [];
+    const latest = entries[entries.length-1];
+    const card = document.createElement('div');
+    card.className = 'meas-card';
+    card.innerHTML = `
+      <div class="meas-card-label">${type}</div>
+      <div class="meas-card-val">${latest ? latest.val : '—'}<span class="meas-card-unit">${latest ? 'cm' : ''}</span></div>
+      <div class="meas-card-date">${latest ? new Date(latest.date+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric'}) : 'Not logged'}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── PERSONAL RECORDS ──
+function logPR() {
+  const ex  = document.getElementById('pr-ex-inp').value.trim();
+  const val = document.getElementById('pr-val-inp').value.trim();
+  if (!ex || !val) { toast('Fill in both fields', '#e74c3c'); return; }
+  if (!S.prs) S.prs = [];
+  // Update existing or add new
+  const idx = S.prs.findIndex(p => p.ex.toLowerCase() === ex.toLowerCase());
+  const entry = { ex, val, date: todayStr(), ts: Date.now() };
+  if (idx >= 0) S.prs[idx] = entry;
+  else S.prs.push(entry);
+  document.getElementById('pr-ex-inp').value = '';
+  document.getElementById('pr-val-inp').value = '';
+  save(); renderPRList(); toast('🏆 PR saved!', '#f39c12');
+}
+
+function renderPRList() {
+  if (!S.prs) S.prs = [];
+  const list = document.getElementById('pr-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (S.prs.length === 0) {
+    list.innerHTML = '<div class="today-empty">No PRs yet. Log your first personal record below.</div>';
+    return;
+  }
+  [...S.prs].sort((a,b)=>a.ex.localeCompare(b.ex)).forEach(pr => {
+    const card = document.createElement('div');
+    card.className = 'pr-card';
+    card.innerHTML = `
+      <div class="pr-card-top">
+        <div class="pr-ex-name">${pr.ex}</div>
+        <button class="pr-del" data-ts="${pr.ts}">×</button>
+      </div>
+      <div class="pr-val">${pr.val}</div>
+      <div class="pr-meta">Set ${new Date(pr.date+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'})}</div>`;
+    card.querySelector('.pr-del').onclick = () => {
+      if (!confirm(`Delete PR for "${pr.ex}"?`)) return;
+      S.prs = S.prs.filter(p => p.ts !== pr.ts);
+      save(); renderPRList();
+    };
+    list.appendChild(card);
+  });
+}
+
+// Update data page stats to include body data
+function getBodyStats() {
+  return {
+    weightEntries: (S.weightLog||[]).length,
+    prs: (S.prs||[]).length,
+  };
 }
 
 // ═══════════════════════════════════════════════════
