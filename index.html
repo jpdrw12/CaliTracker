@@ -585,6 +585,25 @@
     .ex-edit-target-inp{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 10px;font-size:14px;outline:none;font-family:var(--fb);-webkit-appearance:none;text-align:center;}
     .ex-edit-target-inp:focus{border-color:var(--teal);}
 
+    /* PHASE 6 — SCHEDULE IMPROVEMENTS */
+    .task-streak-badge{
+      font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;
+      background:#2d1e0a;color:#f39c12;font-family:var(--fd);letter-spacing:0.5px;
+      flex-shrink:0;
+    }
+    .task-card .task-edit-btn{
+      background:none;border:none;color:var(--faint);font-size:15px;
+      cursor:pointer;padding:0 3px;-webkit-tap-highlight-color:transparent;
+      flex-shrink:0;
+    }
+    .task-card .task-edit-btn:active{color:var(--teal);}
+    .sched-today-btn{
+      background:#1abc9c22;border:1px solid #1abc9c44;color:var(--teal);
+      border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;
+      font-family:var(--fd);letter-spacing:1px;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
 
@@ -867,6 +886,7 @@
   <div class="ph">
     <div class="ph-row">
       <div><div class="ph-lbl">Tasks & Events</div><div class="ph-title">SCHEDULE</div></div>
+      <button class="sched-today-btn" id="sched-today-btn" onclick="jumpSchedToToday()">Today</button>
     </div>
   </div>
   <div class="cal-grid">
@@ -1013,6 +1033,39 @@
       </div>
       <button class="save-btn-teal" onclick="saveMealEdit()">SAVE MEAL</button>
       <button class="reset-sm-btn" onclick="resetMealToDefault()">Reset to Default</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TASK EDIT MODAL ══ -->
+<div class="modal-overlay" id="task-edit-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div><div class="modal-title">EDIT TASK</div></div>
+      <button class="modal-close" onclick="closeTaskEdit()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-lbl">Task Title</div>
+      <input class="field-inp" id="task-edit-title" type="text" placeholder="Task title"/>
+      <div class="field-lbl">Time <span style="color:var(--faint);font-size:10px;text-transform:none;letter-spacing:0">(optional)</span></div>
+      <input class="field-inp" id="task-edit-time" type="time" style="color-scheme:dark"/>
+      <div class="field-lbl">Category</div>
+      <div class="cat-select-row">
+        <button class="cat-select-btn daily" id="edit-cat-daily" onclick="selectEditCat('daily')">Daily</button>
+        <button class="cat-select-btn weekly" id="edit-cat-weekly" onclick="selectEditCat('weekly')">Weekly</button>
+        <button class="cat-select-btn monthly" id="edit-cat-monthly" onclick="selectEditCat('monthly')">Monthly</button>
+        <button class="cat-select-btn once" id="edit-cat-once" onclick="selectEditCat('once')">Once</button>
+      </div>
+      <div class="toggle-row" id="task-edit-recur-row">
+        <div>
+          <div class="toggle-lbl">Recurring</div>
+          <div class="toggle-sub">Reappears each period — mark done manually</div>
+        </div>
+        <button class="ios-toggle on" id="task-edit-recur-toggle" onclick="toggleEditRecur()"></button>
+      </div>
+      <button class="save-btn-teal" onclick="saveTaskEdit()">SAVE CHANGES</button>
+      <button class="reset-sm-btn" style="background:#1a0f0f;color:var(--red);border:1px solid #3d1515;margin-top:8px" onclick="deleteTaskFromEdit()">Delete Task</button>
     </div>
   </div>
 </div>
@@ -1595,7 +1648,14 @@ function isTaskDone(task,dateStr){
 }
 
 function renderSchedule(){
-  const{y,m}=getCalDate();
+  // Default selected date to today if not set
+  if(!S.calSelDate) S.calSelDate = todayStr();
+  // Default calendar month to current month if not set
+  if(!S.calMonth){
+    const n=new Date();
+    S.calMonth={y:n.getFullYear(),m:n.getMonth()};
+  }
+  const{y,m}=S.calMonth;
   document.getElementById('cal-month-title').textContent=`${MONTHS[m]} ${y}`;
   const selDate=S.calSelDate||todayStr();
   const today=todayStr();
@@ -1658,6 +1718,12 @@ function renderSchedule(){
     const card=document.createElement('div');
     card.className='task-card'+(done?' done-card':'');
     const catColors={daily:'cat-daily',weekly:'cat-weekly',monthly:'cat-monthly',once:'cat-once'};
+    // Completion streak for recurring tasks
+    let streakHTML='';
+    if(task.recurring&&task.cat!=='once'){
+      const streak=getTaskStreak(task);
+      if(streak>1)streakHTML=`<span class="task-streak-badge">🔥 ${streak}</span>`;
+    }
     card.innerHTML=`
       <div class="task-chk${done?' done':''}" data-id="${task.id}" data-date="${selDate}"></div>
       <div class="task-body">
@@ -1665,15 +1731,22 @@ function renderSchedule(){
         <div class="task-meta">
           <span class="task-cat ${catColors[task.cat]}">${task.cat}</span>
           ${task.time?`<span class="task-time-badge">🕐 ${task.time}</span>`:''}
-          ${task.recurring&&task.cat!=='once'?'<span class="task-date">🔄 recurring</span>':''}
+          ${task.recurring&&task.cat!=='once'?'<span class="task-date">🔄</span>':''}
+          ${streakHTML}
         </div>
       </div>
+      <button class="task-edit-btn" data-id="${task.id}">✏️</button>
       <button class="task-del-btn" data-id="${task.id}">×</button>`;
     card.querySelector('.task-chk').onclick=()=>{
       if(!S.taskDone)S.taskDone={};
       const k=task.id+'-'+selDate;
       S.taskDone[k]=!S.taskDone[k];
+      if(navigator.vibrate)navigator.vibrate(8);
       save();renderSchedule();updateSchedBadge();
+    };
+    card.querySelector('.task-edit-btn').onclick=e=>{
+      e.stopPropagation();
+      openTaskEdit(task);
     };
     card.querySelector('.task-del-btn').onclick=()=>{
       if(!confirm(`Delete "${task.title}"?`))return;
@@ -1700,6 +1773,81 @@ function updateSchedBadge(){
   badge.classList.toggle('show',undone>0);
 }
 
+// ═══════════════════════════════════════════════════
+// PHASE 6: SCHEDULE IMPROVEMENTS
+// ═══════════════════════════════════════════════════
+function jumpSchedToToday(){
+  const n=new Date();
+  S.calMonth={y:n.getFullYear(),m:n.getMonth()};
+  S.calSelDate=todayStr();
+  save();renderSchedule();
+}
+
+function getTaskStreak(task){
+  if(!task.recurring) return 0;
+  let streak=0;
+  const today=new Date();
+  for(let i=0;i<365;i++){
+    const d=new Date(today);
+    d.setDate(today.getDate()-i);
+    const ds=d.toISOString().slice(0,10);
+    const due=tasksDueOnDate(ds).find(t=>t.id===task.id);
+    if(due&&isTaskDone(task,ds)){streak++;}
+    else if(i>0){break;}
+  }
+  return streak;
+}
+
+// TASK EDIT
+let taskEditId=null,taskEditCat='daily',taskEditRecur=true;
+
+function openTaskEdit(task){
+  taskEditId=task.id;
+  taskEditCat=task.cat;
+  taskEditRecur=task.recurring!==false;
+  document.getElementById('task-edit-title').value=task.title;
+  document.getElementById('task-edit-time').value=task.time||'';
+  ['daily','weekly','monthly','once'].forEach(c=>{
+    document.getElementById('edit-cat-'+c).classList.toggle('sel',c===task.cat);
+  });
+  document.getElementById('task-edit-recur-toggle').classList.toggle('on',taskEditRecur);
+  document.getElementById('task-edit-recur-row').style.display=task.cat==='once'?'none':'flex';
+  document.getElementById('task-edit-modal').classList.add('open');
+}
+
+function closeTaskEdit(){document.getElementById('task-edit-modal').classList.remove('open');}
+
+function selectEditCat(c){
+  taskEditCat=c;
+  ['daily','weekly','monthly','once'].forEach(cc=>{
+    document.getElementById('edit-cat-'+cc).classList.toggle('sel',cc===c);
+  });
+  document.getElementById('task-edit-recur-row').style.display=c==='once'?'none':'flex';
+}
+
+function toggleEditRecur(){
+  taskEditRecur=!taskEditRecur;
+  document.getElementById('task-edit-recur-toggle').classList.toggle('on',taskEditRecur);
+}
+
+function saveTaskEdit(){
+  const title=document.getElementById('task-edit-title').value.trim();
+  if(!title){toast('Please enter a title','#e74c3c');return;}
+  const time=document.getElementById('task-edit-time').value||null;
+  const idx=S.tasks.findIndex(t=>t.id===taskEditId);
+  if(idx===-1)return;
+  S.tasks[idx]={...S.tasks[idx],title,cat:taskEditCat,time,
+    recurring:taskEditCat==='once'?false:taskEditRecur};
+  save();closeTaskEdit();renderSchedule();toast('✓ Task updated');
+}
+
+function deleteTaskFromEdit(){
+  if(!confirm('Delete this task?'))return;
+  S.tasks=S.tasks.filter(t=>t.id!==taskEditId);
+  save();closeTaskEdit();renderSchedule();updateSchedBadge();toast('Task deleted');
+}
+
+// ═══════════════════════════════════════════════════
 // ADD TASK MODAL
 let taskCat='daily',taskRecur=true;
 function openAddTask(){
@@ -2693,7 +2841,7 @@ document.getElementById('ml-reset-btn').onclick=()=>{
 };
 
 // MODAL BACKDROPS
-['shop-modal','meal-modal','task-modal','quickadd-modal','ex-edit-modal'].forEach(id=>{
+['shop-modal','meal-modal','task-modal','quickadd-modal','ex-edit-modal','task-edit-modal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');});
 });
 initSessionNotes();
