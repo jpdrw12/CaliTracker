@@ -672,6 +672,24 @@
       cursor:pointer;-webkit-tap-highlight-color:transparent;
     }
 
+    /* PHASE 9 — DATA & RELIABILITY */
+    .storage-bar-wrap{margin-top:8px;}
+    .storage-bar-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px;}
+    .storage-bar-track{height:6px;background:var(--surface2);border-radius:4px;}
+    .storage-bar-fill{height:100%;border-radius:4px;transition:width 0.4s;}
+    .storage-bar-fill.low{background:var(--teal);}
+    .storage-bar-fill.mid{background:var(--yellow);}
+    .storage-bar-fill.high{background:var(--red);}
+    .import-preview-box{
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:10px;padding:12px 14px;margin-bottom:14px;
+    }
+    .import-preview-title{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--teal);margin-bottom:8px;}
+    .import-preview-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);}
+    .import-preview-row:last-child{border-bottom:none;}
+    .import-preview-key{color:var(--muted);}
+    .import-preview-val{font-family:var(--fd);font-weight:700;color:var(--text);}
+
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
 
@@ -870,6 +888,25 @@
         <textarea class="field-inp" id="qa-note-body" rows="4" placeholder="Start writing..." style="resize:none;line-height:1.6"></textarea>
       </div>
       <button class="save-btn-teal" onclick="saveQuickAdd()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPORT PREVIEW MODAL ══ -->
+<div class="modal-overlay" id="import-preview-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div><div class="modal-title">RESTORE BACKUP</div><div class="modal-sub">Review before importing</div></div>
+      <button class="modal-close" onclick="closeImportPreview()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="import-preview-box" id="import-preview-content"></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+        This will <strong style="color:var(--text)">replace all current data</strong> on this device with the backup above. This cannot be undone.
+      </div>
+      <button class="save-btn-teal" id="import-confirm-btn">RESTORE THIS BACKUP</button>
+      <button class="reset-sm-btn" onclick="closeImportPreview()" style="margin-top:8px">Cancel</button>
     </div>
   </div>
 </div>
@@ -1099,7 +1136,12 @@
     <div class="ph-row"><div><div class="ph-lbl">CaliTrack</div><div class="ph-title">DATA</div></div></div>
   </div>
   <div style="padding:14px 16px 0">
-    <div class="data-stat"><div class="data-stat-title">YOUR PROGRESS</div><div class="data-stat-grid" id="stat-grid"></div></div>
+    <div class="data-stat"><div class="data-stat-title">YOUR PROGRESS</div><div class="data-stat-grid" id="stat-grid"></div>
+      <div class="storage-bar-wrap">
+        <div class="storage-bar-label"><span>LOCAL STORAGE</span><span id="storage-used-lbl">—</span></div>
+        <div class="storage-bar-track"><div class="storage-bar-fill low" id="storage-bar-fill" style="width:0%"></div></div>
+      </div>
+    </div>
   </div>
   <div class="chart-wrap">
     <div class="chart-card">
@@ -1389,7 +1431,11 @@ function defaultState(){
     weightLog:[],measurements:{},prs:[],bodyTab:'weight'};
 }
 let S=loadState();
-function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));autoBackup();}
+function save(){
+  localStorage.setItem('calitrack_data',JSON.stringify(S));
+  idbSaveState(S); // async, non-blocking belt-and-suspenders
+  autoBackup();
+}
 
 // ═══════════════════════════════════════════════════
 // TOAST
@@ -2053,7 +2099,7 @@ function saveTask(){
     time,
     recurring:taskCat==='once'?false:taskRecur,
     dueDate:S.calSelDate||todayStr(),
-    createdAt:new Date().toISOString()
+    createdAt:nowISO()
   };
   S.tasks.push(task);save();closeTaskModal();renderSchedule();toast('✓ Task added');
 }
@@ -2124,7 +2170,7 @@ function renderNotes(){
 function openNoteEditor(id){
   if(id===null){
     // New note
-    const note={id:Date.now().toString(),title:'',body:'',tags:[],pinned:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    const note={id:Date.now().toString(),title:'',body:'',tags:[],pinned:false,createdAt:nowISO(),updatedAt:nowISO()};
     S.notes.unshift(note);save();
     editingNoteId=note.id;
   } else {
@@ -2154,7 +2200,7 @@ function saveNoteEdits(){
   if(!note)return;
   note.title=document.getElementById('note-title-inp').value.trim()||'Untitled';
   note.body=document.getElementById('note-editor-body').innerHTML;
-  note.updatedAt=new Date().toISOString();
+  note.updatedAt=nowISO();
   save();
 }
 
@@ -2264,33 +2310,143 @@ function renderDataPage(){
     chartEl.appendChild(wrap);
   });
   updateAutoBackupUI();
+  updateStorageUsage();
 }
 
-function exportData(){
-  const payload=JSON.stringify({...S,exportedAt:new Date().toISOString()},null,2);
-  dlText(payload,`calitrack-backup-${new Date().toISOString().slice(0,10)}.json`);
-  toast('✓ Backup exported');
+// ═══════════════════════════════════════════════════
+// PHASE 9: INDEXEDDB PRIMARY STORE
+// ═══════════════════════════════════════════════════
+const IDB_MAIN_DB    = 'calitrack-main';
+const IDB_MAIN_STORE = 'state';
+const IDB_MAIN_KEY   = 'S';
+
+function openMainIDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(IDB_MAIN_DB, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_MAIN_STORE);
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = () => rej(req.error);
+  });
 }
-function triggerImport(){document.getElementById('import-file').click();}
-function importData(e){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
-      const data=JSON.parse(ev.target.result);
-      if(!data.logs)throw new Error('Invalid');
-      if(!confirm('Replace all current data with this backup?'))return;
-      S=migrate(data);save();renderWorkout();renderMeals();renderSchedule();renderNotes();renderDataPage();
-      toast('✓ Data imported successfully');
-    }catch{toast('Import failed — invalid file','#e74c3c');}
-    e.target.value='';
+
+async function idbSaveState(state) {
+  try {
+    const db = await openMainIDB();
+    await new Promise((res, rej) => {
+      const tx  = db.transaction(IDB_MAIN_STORE, 'readwrite');
+      const req = tx.objectStore(IDB_MAIN_STORE).put(state, IDB_MAIN_KEY);
+      req.onsuccess = () => res();
+      req.onerror   = () => rej(req.error);
+    });
+  } catch { /* fall back to localStorage only */ }
+}
+
+async function idbLoadState() {
+  try {
+    const db = await openMainIDB();
+    return await new Promise((res, rej) => {
+      const tx  = db.transaction(IDB_MAIN_STORE, 'readonly');
+      const req = tx.objectStore(IDB_MAIN_STORE).get(IDB_MAIN_KEY);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror   = () => rej(req.error);
+    });
+  } catch { return null; }
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 9: TIMESTAMP STANDARDISATION
+// ═══════════════════════════════════════════════════
+function nowISO() { return nowISO(); }
+
+// ═══════════════════════════════════════════════════
+// PHASE 9: STORAGE USAGE INDICATOR
+// ═══════════════════════════════════════════════════
+function updateStorageUsage() {
+  try {
+    const raw  = localStorage.getItem('calitrack_data') || '';
+    const used = new Blob([raw]).size;
+    const max  = 5 * 1024 * 1024;
+    const pct  = Math.min(100, Math.round((used / max) * 100));
+    const kb   = (used / 1024).toFixed(1);
+    const lbl  = document.getElementById('storage-used-lbl');
+    const fill = document.getElementById('storage-bar-fill');
+    if (!lbl || !fill) return;
+    lbl.textContent = `${kb} KB / 5 MB (${pct}%)`;
+    fill.style.width = pct + '%';
+    fill.className = 'storage-bar-fill ' + (pct > 75 ? 'high' : pct > 40 ? 'mid' : 'low');
+  } catch { /* ignore */ }
+}
+
+// ═══════════════════════════════════════════════════
+// PHASE 9: IMPORT PREVIEW
+// ═══════════════════════════════════════════════════
+let pendingImportData = null;
+
+function triggerImport() { document.getElementById('import-file').click(); }
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.logs) throw new Error('Invalid backup file');
+      pendingImportData = data;
+      showImportPreview(data);
+    } catch { toast('Import failed — invalid file', '#e74c3c'); }
+    e.target.value = '';
   };
   reader.readAsText(file);
 }
+
+function showImportPreview(data) {
+  const exportedAt = data.exportedAt
+    ? new Date(data.exportedAt).toLocaleString([], {month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})
+    : 'Unknown date';
+  const rows = [
+    { key: 'Backup date',    val: exportedAt },
+    { key: 'Sets logged',    val: Object.values(data.logs||{}).filter(v=>v.done).length },
+    { key: 'Meals tracked',  val: Object.values(data.mealLogs||{}).filter(Boolean).length },
+    { key: 'Tasks',          val: (data.tasks||[]).length },
+    { key: 'Notes',          val: (data.notes||[]).length },
+    { key: 'Weight entries', val: (data.weightLog||[]).length },
+    { key: 'PRs',            val: (data.prs||[]).length },
+    { key: 'Data version',   val: `v${data.version||1}` },
+  ];
+  document.getElementById('import-preview-content').innerHTML = `
+    <div class="import-preview-title">BACKUP CONTENTS</div>
+    ${rows.map(r=>`<div class="import-preview-row"><span class="import-preview-key">${r.key}</span><span class="import-preview-val">${r.val}</span></div>`).join('')}`;
+  document.getElementById('import-confirm-btn').onclick = confirmImport;
+  document.getElementById('import-preview-modal').classList.add('open');
+}
+
+function confirmImport() {
+  if (!pendingImportData) return;
+  S = migrate(pendingImportData);
+  save(); idbSaveState(S);
+  closeImportPreview();
+  renderWorkout();renderMeals();renderSchedule();renderNotes();renderBodyPage();renderDataPage();renderToday();
+  toast('Data restored successfully');
+  pendingImportData = null;
+}
+
+function closeImportPreview() {
+  document.getElementById('import-preview-modal').classList.remove('open');
+  pendingImportData = null;
+}
+
+function exportData() {
+  const payload = JSON.stringify({...S, exportedAt: nowISO(), exportVersion: DATA_VERSION}, null, 2);
+  dlText(payload, `calitrack-backup-${nowISO().slice(0,10)}.json`);
+  toast('Backup exported');
+}
+
 function clearAllData(){
   if(!confirm('Delete ALL data? This cannot be undone.'))return;
   if(!confirm('Are you sure? All progress will be lost.'))return;
-  S=defaultState();save();renderWorkout();renderMeals();renderSchedule();renderNotes();renderDataPage();
+  S=defaultState();save();idbSaveState(S);
+  renderWorkout();renderMeals();renderSchedule();renderNotes();renderBodyPage();renderDataPage();renderToday();
   toast('All data cleared');
 }
 function dlText(text,filename){
@@ -2661,9 +2817,9 @@ async function autoBackup() {
       const handle = await getVerifiedHandle();
       if (!handle) return;
       const writable = await handle.createWritable();
-      await writable.write(JSON.stringify({ ...S, autoBackedUpAt: new Date().toISOString() }, null, 2));
+      await writable.write(JSON.stringify({ ...S, autoBackedUpAt: nowISO() }, null, 2));
       await writable.close();
-      S.lastAutoBackup = new Date().toISOString();
+      S.lastAutoBackup = nowISO();
       localStorage.setItem('calitrack_data', JSON.stringify(S));
       updateAutoBackupUI();
     } catch (err) {
@@ -2983,7 +3139,7 @@ function saveQuickAdd() {
     S.tasks.push({
       id: Date.now().toString(), title, cat: qaCat, time,
       recurring: qaCat !== 'once', dueDate: todayStr(),
-      createdAt: new Date().toISOString()
+      createdAt: nowISO()
     });
     toast('✓ Task added');
   } else {
@@ -2991,7 +3147,7 @@ function saveQuickAdd() {
     const body  = document.getElementById('qa-note-body').value.trim();
     S.notes.unshift({
       id: Date.now().toString(), title, body, tags: [], pinned: false,
-      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      createdAt: nowISO(), updatedAt: nowISO()
     });
     toast('✓ Note added');
   }
@@ -3235,7 +3391,7 @@ document.getElementById('ml-reset-btn').onclick=()=>{
 };
 
 // MODAL BACKDROPS
-['shop-modal','meal-modal','task-modal','quickadd-modal','ex-edit-modal','task-edit-modal'].forEach(id=>{
+['shop-modal','meal-modal','task-modal','quickadd-modal','ex-edit-modal','task-edit-modal','import-preview-modal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');});
 });
 // Tap outside input to dismiss keyboard
