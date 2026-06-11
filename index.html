@@ -643,6 +643,35 @@
     .meas-card-unit{font-size:11px;color:var(--muted);margin-left:2px;}
     .meas-card-date{font-size:10px;color:var(--faint);margin-top:2px;}
 
+    /* PHASE 8 — NOTES & POLISH */
+    .meal-custom-badge{
+      font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;
+      background:#0f1a2d;color:#3a9edc;font-family:var(--fd);letter-spacing:0.5px;
+      margin-left:5px;flex-shrink:0;
+    }
+    .task-search-wrap{padding:0 16px 8px;}
+    .task-search-inp{
+      width:100%;background:var(--surface);border:1px solid var(--border);
+      border-radius:10px;color:var(--text);padding:9px 14px;font-size:13px;
+      outline:none;font-family:var(--fb);-webkit-appearance:none;
+    }
+    .task-search-inp:focus{border-color:var(--teal);}
+    /* Keyboard done toolbar */
+    .kbd-toolbar{
+      display:none;
+      position:fixed;bottom:0;left:0;right:0;z-index:400;
+      background:var(--surface2);border-top:1px solid var(--border);
+      padding:8px 16px calc(var(--sab) + 8px);
+      justify-content:flex-end;
+    }
+    .kbd-toolbar.show{display:flex;}
+    .kbd-done-btn{
+      background:var(--teal);border:none;color:#07070f;
+      border-radius:8px;padding:7px 20px;
+      font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:0.5px;
+      cursor:pointer;-webkit-tap-highlight-color:transparent;
+    }
+
     /* TOAST */
     #toast{position:fixed;top:calc(var(--sat) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#07070f;border-radius:20px;padding:8px 18px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;pointer-events:none;}
 
@@ -717,6 +746,11 @@
     <div class="ob-tab"><div class="ob-tab-icon">💾</div><div><div class="ob-tab-title">DATA</div><div class="ob-tab-sub">Progress charts, backup and restore — your data never leaves your device</div></div></div>
   </div>
   <button class="ob-start-btn" onclick="closeOnboarding()">GET STARTED</button>
+</div>
+
+<!-- KEYBOARD DONE TOOLBAR -->
+<div class="kbd-toolbar" id="kbd-toolbar">
+  <button class="kbd-done-btn" onclick="dismissKeyboard()">Done</button>
 </div>
 
 <!-- BACKUP PROMPT -->
@@ -947,6 +981,9 @@
     <div class="tasks-hdr">
       <div class="tasks-hdr-title" id="tasks-hdr-title">TODAY'S TASKS</div>
       <button class="add-task-btn" onclick="openAddTask()">+ ADD TASK</button>
+    </div>
+    <div class="task-search-wrap">
+      <input class="task-search-inp" id="task-search" type="text" placeholder="🔍 Search tasks..." oninput="renderSchedule()"/>
     </div>
     <div id="tasks-list"></div>
   </div>
@@ -1394,7 +1431,9 @@ function getMeal(di,slot){
   return S.mealCustom[key] || S.mealCustom[di+'-'+slot] || getActiveMeals()[di][slot];
 }
 function toggleMealRotation(){
-  S.mealRotation = S.mealRotation === 'B' ? 'A' : 'B';
+  const next = S.mealRotation === 'B' ? 'A' : 'B';
+  if(!confirm(`Switch to Week ${next} meal plan? This shows a different set of 7 meals.`)) return;
+  S.mealRotation = next;
   save(); renderMeals();
   toast(`Switched to Week ${S.mealRotation} meal plan`);
 }
@@ -1667,9 +1706,11 @@ function renderMeals(){
   const mc=document.getElementById('meals-content');mc.innerHTML='';
   [{key:'breakfast',label:'☀️ Breakfast'},{key:'lunch',label:'🌤 Lunch'},{key:'dinner',label:'🌙 Dinner'}].forEach(slot=>{
     const meal=getMeal(S.mlDay,slot.key),k=mlKey(S.mlWeek,S.mlDay,slot.key),eaten=!!S.mealLogs[k];
+    const isCustom=!!(S.mealCustom[S.mlDay+'-'+slot.key+'-'+(S.mealRotation||'A')]||S.mealCustom[S.mlDay+'-'+slot.key]);
+    const customBadge=isCustom?`<span class="meal-custom-badge">edited</span>`:'';
     const sec=document.createElement('div');sec.className='meal-sec';
     const tags=(meal.tags||[]).map(t=>`<span class="mtag ${t}">${t}</span>`).join('');
-    sec.innerHTML=`<div class="meal-sec-title">${slot.label}</div><div class="meal-card${eaten?' eaten':''}"><div class="meal-top"><div class="meal-chk"></div><div class="meal-info"><div class="meal-name">${meal.name}</div><div class="meal-desc">${meal.desc}</div><div class="meal-tags">${tags}</div></div><button class="meal-edit-btn" data-day="${S.mlDay}" data-slot="${slot.key}">✏️</button></div></div>`;
+    sec.innerHTML=`<div class="meal-sec-title">${slot.label}</div><div class="meal-card${eaten?' eaten':''}"><div class="meal-top"><div class="meal-chk"></div><div class="meal-info"><div class="meal-name">${meal.name}${customBadge}</div><div class="meal-desc">${meal.desc}</div><div class="meal-tags">${tags}</div></div><button class="meal-edit-btn" data-day="${S.mlDay}" data-slot="${slot.key}">✏️</button></div></div>`;
     sec.querySelector('.meal-card').addEventListener('click',e=>{
       if(e.target.classList.contains('meal-edit-btn')||e.target.closest('.meal-edit-btn'))return;
       S.mealLogs[k]=!S.mealLogs[k]||undefined;if(!S.mealLogs[k])delete S.mealLogs[k];save();renderMeals();
@@ -1819,7 +1860,10 @@ function renderSchedule(){
   }
 
   // Tasks list for selected date
-  const tasks=tasksDueOnDate(selDate);
+  const allTasks=tasksDueOnDate(selDate);
+  // Apply search filter
+  const query=(document.getElementById('task-search')?.value||'').trim().toLowerCase();
+  const tasks=query?allTasks.filter(t=>t.title.toLowerCase().includes(query)):allTasks;
   const isToday=selDate===today;
   const selD=new Date(selDate+'T00:00:00');
   document.getElementById('tasks-hdr-title').textContent=
@@ -1828,7 +1872,8 @@ function renderSchedule(){
   const list=document.getElementById('tasks-list');list.innerHTML='';
 
   if(tasks.length===0){
-    list.innerHTML=`<div class="empty-state"><div class="es-icon">📭</div>No tasks for this day.<br>Tap + ADD TASK to create one.</div>`;
+    const msg=query?`No tasks match "${query}"`:'No tasks for this day.<br>Tap + ADD TASK to create one.';
+    list.innerHTML=`<div class="empty-state"><div class="es-icon">${query?'🔍':'📭'}</div>${msg}</div>`;
     return;
   }
 
@@ -3141,6 +3186,35 @@ function getBodyStats() {
 }
 
 // ═══════════════════════════════════════════════════
+// PHASE 8: KEYBOARD DONE TOOLBAR
+// ═══════════════════════════════════════════════════
+function dismissKeyboard() {
+  document.activeElement?.blur();
+  document.getElementById('kbd-toolbar').classList.remove('show');
+}
+
+function initKeyboardToolbar() {
+  // Show Done toolbar whenever any text/number input or textarea is focused
+  // except inputs inside modals that already have their own action buttons
+  document.addEventListener('focusin', e => {
+    const tag = e.target.tagName;
+    const isInput = (tag === 'INPUT' || tag === 'TEXTAREA');
+    const inModal = e.target.closest('.modal-sheet, #note-editor-modal');
+    if (isInput && !inModal) {
+      document.getElementById('kbd-toolbar').classList.add('show');
+    }
+  });
+  document.addEventListener('focusout', e => {
+    // Small delay so the Done button tap registers before hiding
+    setTimeout(() => {
+      if (!document.activeElement || document.activeElement === document.body) {
+        document.getElementById('kbd-toolbar').classList.remove('show');
+      }
+    }, 150);
+  });
+}
+
+// ═══════════════════════════════════════════════════
 // WEEK NAV & RESETS
 // ═══════════════════════════════════════════════════
 document.getElementById('wo-prev').onclick=()=>{S.woWeek=Math.max(0,S.woWeek-1);save();renderWorkout();};
@@ -3164,7 +3238,17 @@ document.getElementById('ml-reset-btn').onclick=()=>{
 ['shop-modal','meal-modal','task-modal','quickadd-modal','ex-edit-modal','task-edit-modal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');});
 });
+// Tap outside input to dismiss keyboard
+document.addEventListener('touchend', e => {
+  const tag = e.target.tagName;
+  if(tag !== 'INPUT' && tag !== 'TEXTAREA' && !e.target.closest('.modal-sheet') && !e.target.closest('#note-editor-modal')) {
+    if(document.activeElement && (document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='TEXTAREA')) {
+      document.activeElement.blur();
+    }
+  }
+}, {passive:true});
 initSessionNotes();
+initKeyboardToolbar();
 
 // ═══════════════════════════════════════════════════
 // INIT
