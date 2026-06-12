@@ -105,6 +105,10 @@
     .set-chk.done::after{content:'✓';color:#fff;font-size:13px;font-weight:700;}
     .set-lbl{color:var(--muted);font-size:12px;width:44px;flex-shrink:0;}
     .set-inp{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:12px;width:90px;outline:none;font-family:var(--fb);-webkit-appearance:none;}
+    .timer-btn{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:0.5px;color:var(--muted);cursor:pointer;transition:border-color 0.15s,color 0.15s;white-space:nowrap;flex-shrink:0;min-width:62px;justify-content:center;-webkit-tap-highlight-color:transparent;}
+    .timer-btn:active{opacity:0.75;}
+    .timer-btn.running{background:rgba(26,188,156,0.1);border-color:var(--teal);color:var(--teal);}
+    .timer-btn.done-timer{opacity:0.5;pointer-events:none;}
 
     /* MEAL CARDS */
     #meals-content{padding:0 16px;}
@@ -1461,6 +1465,9 @@ function getCurrentISOWeekIndex() {
 // PHASE 5: CUSTOM EXERCISE SETS/REPS
 // ═══════════════════════════════════════════════════
 let exEditCtx = null;
+const activeTimers = {};
+function isTimedExercise(target){return/\d+\s*(sec|min)\b/i.test(target);}
+function fmtElapsed(s){const m=Math.floor(s/60),sc=s%60;return m>0?`${m}:${String(sc).padStart(2,'0')}`:s+'s';}
 
 function getExCustomKey(dayIdx, exId) {
   return `ex-${dayIdx}-${exId}`;
@@ -1627,7 +1634,12 @@ function renderWorkout(){
       const k=wKey(S.woWeek,S.woDay,ex.id,s),e=S.logs[k]||{};
       const prev=getPrevReps(S.woDay,ex.id,s);
       const prevHint=prev?`<span class="prev-reps">Last: ${prev}</span>`:'';
-      rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><input class="set-inp" inputmode="numeric" type="text" placeholder="${prev?'Last: '+prev:'reps / time'}" value="${e.reps||''}" data-k="${k}"/>${prevHint}</div>`;
+      if(isTimedExercise(exData.target)){
+        const alreadyDone=e.done,timerVal=e.reps||'0:00';
+        rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><button class="timer-btn${e.done?' done-timer':''}" data-k="${k}"><span>⏱</span><span class="timer-val" id="tv-${k}">${e.done?timerVal:'0:00'}</span></button>${prevHint}</div>`;
+      } else {
+        rows+=`<div class="set-row"><button class="set-chk${e.done?' done':''}" data-k="${k}"></button><span class="set-lbl">Set ${s}</span><input class="set-inp" inputmode="numeric" type="text" placeholder="${prev?'Last: '+prev:'reps / time'}" value="${e.reps||''}" data-k="${k}"/>${prevHint}</div>`;
+      }
     }
     const customBadge=exData.isCustom?`<span class="ex-custom-badge">custom</span>`:'';
     card.innerHTML=`
@@ -1660,6 +1672,35 @@ function renderWorkout(){
     }));
     card.querySelectorAll('.set-inp').forEach(inp=>inp.addEventListener('input',()=>{
       const k=inp.dataset.k;if(!S.logs[k])S.logs[k]={};S.logs[k].reps=inp.value;save();
+    }));
+    card.querySelectorAll('.timer-btn').forEach(btn=>btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const k=btn.dataset.k;
+      if(activeTimers[k]){
+        clearInterval(activeTimers[k].iv);
+        const elapsed=activeTimers[k].elapsed;
+        delete activeTimers[k];
+        if(!S.logs[k])S.logs[k]={};
+        S.logs[k].reps=fmtElapsed(elapsed);
+        S.logs[k].done=true;
+        save();renderWorkout();checkDayCompletion();
+        if(navigator.vibrate)navigator.vibrate(8);
+        const restSecs=REST_TIMES[WORKOUTS[S.woDay].type]||90;
+        if(restSecs>0)startRestTimer(restSecs);
+      } else {
+        // Stop any other running timer in this exercise
+        card.querySelectorAll('.timer-btn').forEach(ob=>{
+          const ok=ob.dataset.k;
+          if(ok!==k&&activeTimers[ok]){clearInterval(activeTimers[ok].iv);delete activeTimers[ok];ob.classList.remove('running');const tv=document.getElementById('tv-'+ok);if(tv)tv.textContent='0:00';}
+        });
+        activeTimers[k]={elapsed:0,iv:null};
+        btn.classList.add('running');
+        activeTimers[k].iv=setInterval(()=>{
+          activeTimers[k].elapsed++;
+          const tv=document.getElementById('tv-'+k);
+          if(tv)tv.textContent=fmtElapsed(activeTimers[k].elapsed);
+        },1000);
+      }
     }));
     el.appendChild(card);
   });
