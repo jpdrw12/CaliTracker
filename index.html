@@ -2626,6 +2626,7 @@ function startRestTimer(seconds) {
     if (remaining <= 0) {
       clearInterval(restTimerInterval);
       if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+      playDing();
       subEl.textContent = 'Rest complete!';
       arc.style.stroke = '#27ae60';
       setTimeout(() => {
@@ -2634,6 +2635,27 @@ function startRestTimer(seconds) {
       }, 1500);
     }
   }, 1000);
+}
+
+function playDing() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    function ding(freq, startTime, duration) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0.4, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    }
+    const t = ctx.currentTime;
+    ding(880, t, 0.6);
+    ding(1108, t + 0.18, 0.6);
+  } catch(e) {}
 }
 
 function skipRestTimer() {
