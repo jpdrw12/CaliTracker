@@ -649,6 +649,22 @@
     .meas-card-val{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--text);}
     .meas-card-unit{font-size:11px;color:var(--muted);margin-left:2px;}
     .meas-card-date{font-size:10px;color:var(--faint);margin-top:2px;}
+    .photo-section-title{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin:16px 16px 8px;font-family:var(--fd);font-weight:700;}
+    .photo-capture-card{background:var(--surface);border-radius:12px;padding:14px;margin:0 16px 10px;}
+    .photo-capture-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
+    .photo-capture-btn{display:flex;align-items:center;gap:6px;background:var(--teal);color:#000;border:none;border-radius:8px;padding:9px 16px;font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:0.5px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+    .photo-capture-btn:active{opacity:0.8;}
+    .photo-note-inp{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;font-family:var(--fb);outline:none;flex:1;min-width:0;}
+    .photo-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 16px 16px;}
+    .photo-thumb-wrap{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--surface2);}
+    .photo-thumb{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;}
+    .photo-thumb-date{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:#fff;font-size:9px;padding:3px 5px;font-family:var(--fd);font-weight:700;letter-spacing:0.5px;}
+    .photo-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 16px;font-style:italic;}
+    .photo-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .photo-lightbox img{max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px;}
+    .photo-lightbox-meta{color:rgba(255,255,255,0.7);font-size:12px;margin-top:10px;text-align:center;padding:0 20px;}
+    .photo-lightbox-close{position:absolute;top:calc(env(safe-area-inset-top)+12px);right:16px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .photo-lightbox-del{margin-top:16px;background:rgba(231,76,60,0.2);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:8px 20px;font-family:var(--fd);font-size:14px;font-weight:700;cursor:pointer;}
 
     /* PHASE 8 — NOTES & POLISH */
     .meal-custom-badge{
@@ -1063,6 +1079,15 @@
         </div>
       </div>
     </div>
+    <div class="photo-section-title">📸 Progress Photos</div>
+    <div class="photo-capture-card">
+      <div class="photo-capture-row">
+        <button class="photo-capture-btn" onclick="document.getElementById('photo-file-inp').click()">📷 Add Photo</button>
+        <input class="photo-note-inp" id="photo-note-inp" type="text" placeholder="Optional note…" maxlength="80"/>
+      </div>
+      <input type="file" id="photo-file-inp" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoCapture(this)"/>
+    </div>
+    <div class="photo-gallery" id="photo-gallery"></div>
   </div>
   <!-- PRs section -->
   <div id="body-prs-section" style="display:none">
@@ -1393,7 +1418,7 @@ function defaultState(){
     mealRotation:'A',theme:'dark',onboardingDone:false,
     autoBackupFileName:null,lastAutoBackup:null,
     exCustom:{},sessionNotes:{},
-    weightLog:[],measurements:{},prs:[],bodyTab:'weight'};
+    weightLog:[],measurements:{},prs:[],bodyTab:'weight',progressPhotos:[]};
 }
 let S=loadState();
 function save(){localStorage.setItem('calitrack_data',JSON.stringify(S));autoBackup();}
@@ -3067,6 +3092,7 @@ let activeMeasType = 'waist';
 
 function switchBodyTab(tab) {
   S.bodyTab = tab;
+  if (tab === 'measurements') { renderMeasGrid(); renderPhotoGallery(); }
   ['weight','measurements','prs'].forEach(t => {
     document.getElementById('body-'+t+'-section').style.display = t===tab?'block':'none';
     document.getElementById('btab-'+t).classList.toggle('active', t===tab);
@@ -3192,6 +3218,61 @@ function renderMeasGrid() {
       <div class="meas-card-val">${latest ? latest.val : '—'}<span class="meas-card-unit">${latest ? 'cm' : ''}</span></div>
       <div class="meas-card-date">${latest ? new Date(latest.date+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric'}) : 'Not logged'}</div>`;
     grid.appendChild(card);
+  });
+}
+
+// ── PROGRESS PHOTOS ──
+function handlePhotoCapture(inp) {
+  if (!inp.files || !inp.files[0]) return;
+  const file = inp.files[0];
+  if (file.size > 5 * 1024 * 1024) { toast('Photo too large (max 5MB)', '#e74c3c'); inp.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const note = (document.getElementById('photo-note-inp').value || '').trim();
+    if (!S.progressPhotos) S.progressPhotos = [];
+    S.progressPhotos.unshift({ id: Date.now(), date: todayStr(), ts: Date.now(), dataUrl: ev.target.result, note });
+    document.getElementById('photo-note-inp').value = '';
+    inp.value = '';
+    save(); renderPhotoGallery(); toast('✓ Photo saved');
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderPhotoGallery() {
+  const gallery = document.getElementById('photo-gallery');
+  if (!gallery) return;
+  gallery.innerHTML = '';
+  const photos = S.progressPhotos || [];
+  if (photos.length === 0) {
+    gallery.innerHTML = '<div class="photo-empty" style="grid-column:1/-1">No photos yet — tap Add Photo to start your progress history</div>';
+    return;
+  }
+  photos.forEach(photo => {
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-thumb-wrap';
+    const dateLabel = new Date(photo.date+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric'});
+    wrap.innerHTML = `<img class="photo-thumb" src="${photo.dataUrl}" loading="lazy"/><div class="photo-thumb-date">${dateLabel}</div>`;
+    wrap.querySelector('img').addEventListener('click', () => openPhotoLightbox(photo));
+    gallery.appendChild(wrap);
+  });
+}
+
+function openPhotoLightbox(photo) {
+  const dateLabel = new Date(photo.date+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'});
+  const lb = document.createElement('div');
+  lb.className = 'photo-lightbox';
+  lb.innerHTML = `
+    <button class="photo-lightbox-close" id="lb-close">✕</button>
+    <img src="${photo.dataUrl}"/>
+    <div class="photo-lightbox-meta">${dateLabel}${photo.note ? ' · ' + photo.note : ''}</div>
+    <button class="photo-lightbox-del" id="lb-del">🗑 Delete Photo</button>`;
+  document.body.appendChild(lb);
+  lb.querySelector('#lb-close').addEventListener('click', () => lb.remove());
+  lb.addEventListener('click', e => { if (e.target === lb) lb.remove(); });
+  lb.querySelector('#lb-del').addEventListener('click', () => {
+    if (!confirm('Delete this photo?')) return;
+    S.progressPhotos = (S.progressPhotos || []).filter(p => p.id !== photo.id);
+    save(); renderPhotoGallery(); lb.remove(); toast('Photo deleted');
   });
 }
 
