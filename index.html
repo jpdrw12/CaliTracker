@@ -3405,6 +3405,12 @@ initKeyboardToolbar();
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
+// Unlock audio on first user interaction (required by mobile browsers)
+document.addEventListener('touchstart', function unlockAudio() {
+  const a = document.getElementById('ding-audio');
+  if (a) { a.play().then(() => a.pause()).catch(() => {}); }
+  document.removeEventListener('touchstart', unlockAudio);
+}, { once: true });
 
 if (!S.lastOpenedDate || S.lastOpenedDate !== todayStr()) {
   autoSelectToday();
