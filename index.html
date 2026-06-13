@@ -1672,6 +1672,14 @@ function renderWorkout(){
       const k=b.dataset.k;if(!S.logs[k])S.logs[k]={};
       const wasUnchecked=!S.logs[k].done;
       S.logs[k].done=!S.logs[k].done;
+      if(!S.logs[k].done){
+        // Unchecking — clear timer state so buttons reset
+        delete S.logs[k].reps;
+        delete S.logs[k].repsL;delete S.logs[k].doneL;
+        delete S.logs[k].repsR;delete S.logs[k].doneR;
+        // Stop any running timers for this key
+        [k,k+'-L',k+'-R'].forEach(tk=>{if(activeTimers[tk]){clearInterval(activeTimers[tk].iv);delete activeTimers[tk];}});
+      }
       save();renderWorkout();checkDayCompletion();
       if(navigator.vibrate)navigator.vibrate(8);
       if(wasUnchecked&&S.logs[k].done){
