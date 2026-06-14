@@ -3479,7 +3479,7 @@ initKeyboardToolbar();
 // Unlock audio on first user interaction (required by mobile browsers)
 document.addEventListener('touchstart', function unlockAudio() {
   const a = document.getElementById('ding-audio');
-  if (a) { a.play().then(() => a.pause()).catch(() => {}); }
+  if (a) { a.volume = 0; a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = 1; }).catch(() => { a.volume = 1; }); }
   document.removeEventListener('touchstart', unlockAudio);
 }, { once: true });
 
