@@ -1699,7 +1699,7 @@ function woDayPct(di){
 function woWeekPct(){return Math.round(WORKOUTS.reduce((a,_,i)=>a+woDayPct(i),0)/7);}
 
 function renderWorkout(){
-  renderWorkoutChallengeBanner();
+  try{renderWorkoutChallengeBanner();}catch(e){}
   // Preserve scroll position
   const pageEl = document.getElementById('page-workout');
   const scrollY = pageEl ? pageEl.scrollTop : 0;
@@ -3018,7 +3018,7 @@ async function updateAutoBackupUI() {
 // TODAY VIEW
 // ═══════════════════════════════════════════════════
 function renderToday() {
-  renderChallengeStrip();
+  try{renderChallengeStrip();}catch(e){}
   const now = new Date();
   document.getElementById('today-date-display').textContent =
     now.toLocaleDateString('en', { month: 'short', day: 'numeric' });
@@ -3538,6 +3538,7 @@ function logChallengeReps(key, reps, bonus) {
 // ── CHALLENGE RENDER ──
 
 function renderChallengeStrip() {
+  if(!S.challenges)S.challenges={};
   const wrap = document.getElementById('challenge-strip-wrap');
   if (!wrap) return;
   const active = Object.entries(S.challenges||{}).filter(([,c])=>c);
@@ -3577,6 +3578,7 @@ function renderChallengeStrip() {
 }
 
 function renderWorkoutChallengeBanner() {
+  if(!S.challenges)S.challenges={};
   const wrap = document.getElementById('wo-challenge-wrap');
   if (!wrap) return;
   const active = Object.entries(S.challenges||{}).filter(([,c])=>c);
@@ -3960,8 +3962,8 @@ save();
 
 switchTab(S.activeTab);
 renderWorkout();
-renderChallengeStrip();
-renderWorkoutChallengeBanner();
+try{renderChallengeStrip();}catch(e){}
+try{renderWorkoutChallengeBanner();}catch(e){}
 // Check all active challenges for week reset on open
 Object.values(S.challenges||{}).forEach(c=>{ if(c) checkWeekReset(c); });
 renderMeals();
