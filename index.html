@@ -3953,28 +3953,27 @@ document.addEventListener('touchstart', function unlockAudio() {
   document.removeEventListener('touchstart', unlockAudio);
 }, { once: true });
 
-if (!S.lastOpenedDate || S.lastOpenedDate !== todayStr()) {
-  autoSelectToday();
-}
-checkBackupPrompt();
-markTodayActive();
-applyTheme(S.theme || 'dark');
-save();
+document.addEventListener('DOMContentLoaded', () => {
+  if (!S.lastOpenedDate || S.lastOpenedDate !== todayStr()) {
+    autoSelectToday();
+  }
+  checkBackupPrompt();
+  markTodayActive();
+  applyTheme(S.theme || 'dark');
+  save();
 
-switchTab(S.activeTab);
-renderWorkout();
-try{renderChallengeStrip();}catch(e){}
-try{renderWorkoutChallengeBanner();}catch(e){}
-// Check all active challenges for week reset on open
-Object.values(S.challenges||{}).forEach(c=>{ if(c) checkWeekReset(c); });
-renderMeals();
-updateSchedBadge();
-checkOnboarding();
-updateAutoBackupUI();
+  switchTab(S.activeTab);
+  renderWorkout();
+  renderMeals();
+  updateSchedBadge();
+  checkOnboarding();
+  updateAutoBackupUI();
+  Object.values(S.challenges||{}).forEach(c=>{ if(c) checkWeekReset(c); });
 
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-}
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  }
+});
 </script>
 <!-- CHALLENGE DETAIL SHEET -->
 <div class="csheet-overlay" id="csheet-overlay">
