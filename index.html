@@ -721,7 +721,7 @@
     .csheet-task-list{display:flex;flex-direction:column;gap:6px;padding:0 16px 10px;}
     .csheet-task{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
     .csheet-task:active{opacity:0.75;}
-    .csheet-task.done-task{opacity:0.45;pointer-events:none;}
+    .csheet-task.done-task{opacity:0.55;}
     .csheet-task-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
     .csheet-task.done-task .csheet-task-chk{background:var(--green);border-color:var(--green);}
     .csheet-task.done-task .csheet-task-chk::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
@@ -3560,6 +3560,23 @@ function checkMilestones(c) {
   }
 }
 
+function unlogChallengeReps(key) {
+  const c = S.challenges[key];
+  if (!c) return;
+  const today = todayStr();
+  const entries = c.logs[today] || [];
+  // Remove the last non-bonus entry
+  const lastIdx = entries.map((e,i)=>(!e.bonus?i:-1)).filter(i=>i>=0).pop();
+  if (lastIdx === undefined) return;
+  entries.splice(lastIdx, 1);
+  if (entries.length === 0) delete c.logs[today];
+  save();
+  renderChallengeStrip();
+  renderWorkoutChallengeBanner();
+  const overlay = document.getElementById('csheet-overlay');
+  if (overlay && overlay.classList.contains('open')) renderChallengeSheet(key);
+}
+
 function logChallengeReps(key, reps, bonus) {
   if (!reps || reps < 1) return;
   const c = S.challenges[key];
@@ -3753,10 +3770,14 @@ function renderChallengeSheet(key) {
       <button class="csheet-bonus-btn" id="csheet-bonus-btn">＋ Log</button>
     </div>`;
 
-  // Bind task clicks
-  el.querySelectorAll('.csheet-task:not(.done-task)').forEach(t => {
+  // Bind task clicks — tap to log, tap done task to unlog
+  el.querySelectorAll('.csheet-task').forEach(t => {
     t.addEventListener('click', () => {
-      logChallengeReps(key, c.taskSize, false);
+      if (t.classList.contains('done-task')) {
+        unlogChallengeReps(key);
+      } else {
+        logChallengeReps(key, c.taskSize, false);
+      }
       if (navigator.vibrate) navigator.vibrate(8);
     });
   });
