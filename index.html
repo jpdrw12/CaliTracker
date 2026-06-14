@@ -665,6 +665,91 @@
     .photo-lightbox-meta{color:rgba(255,255,255,0.7);font-size:12px;margin-top:10px;text-align:center;padding:0 20px;}
     .photo-lightbox-close{position:absolute;top:calc(env(safe-area-inset-top)+12px);right:16px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
     .photo-lightbox-del{margin-top:16px;background:rgba(231,76,60,0.2);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:8px 20px;font-family:var(--fd);font-size:14px;font-weight:700;cursor:pointer;}
+
+    /* ── WEEKLY CHALLENGES ── */
+    .challenge-strip{margin:0 0 6px;display:flex;flex-direction:column;gap:6px;}
+    .challenge-strip-row{background:var(--surface);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .challenge-strip-row:active{opacity:0.8;}
+    .challenge-strip-icon{font-size:18px;flex-shrink:0;}
+    .challenge-strip-info{flex:1;min-width:0;}
+    .challenge-strip-name{font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:0.5px;}
+    .challenge-strip-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+    .challenge-strip-bar-track{height:4px;background:var(--surface2);border-radius:2px;margin-top:5px;}
+    .challenge-strip-bar-fill{height:100%;border-radius:2px;background:var(--teal);transition:width 0.3s;}
+    .challenge-strip-arrow{color:var(--muted);font-size:12px;flex-shrink:0;}
+    .challenge-new-btn{background:var(--surface);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--muted);font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:0.5px;-webkit-tap-highlight-color:transparent;}
+    .challenge-new-btn:active{opacity:0.7;}
+    .wo-challenge-banner{background:var(--surface);border-radius:10px;margin-bottom:8px;padding:10px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .wo-challenge-banner:active{opacity:0.8;}
+    .wo-challenge-banner-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .wo-challenge-banner-name{font-family:var(--fd);font-size:12px;font-weight:700;flex:1;}
+    .wo-challenge-banner-count{font-size:11px;color:var(--muted);}
+    .wo-challenge-bar-track{height:4px;background:var(--surface2);border-radius:2px;position:relative;}
+    .wo-challenge-bar-fill{height:100%;border-radius:2px;background:var(--teal);transition:width 0.3s;}
+    .milestone-pip{position:absolute;top:-2px;width:2px;height:8px;background:rgba(255,255,255,0.25);border-radius:1px;}
+    .milestone-pip.hit{background:gold;}
+    .csheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:8000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+    .csheet-overlay.open{opacity:1;pointer-events:all;}
+    .csheet{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:0 0 32px;}
+    .csheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0;}
+    .csheet-hdr{padding:14px 16px 10px;}
+    .csheet-title{font-family:var(--fd);font-size:22px;font-weight:800;letter-spacing:1px;}
+    .csheet-prog-wrap{margin:0 16px 14px;}
+    .csheet-prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:var(--fd);font-weight:700;}
+    .csheet-prog-track{height:10px;background:var(--surface2);border-radius:5px;position:relative;}
+    .csheet-prog-fill{height:100%;border-radius:5px;background:var(--teal);transition:width 0.4s;}
+    .csheet-milestone-pip{position:absolute;top:-3px;width:3px;height:16px;background:rgba(255,255,255,0.25);border-radius:1px;transform:translateX(-50%);}
+    .csheet-milestone-pip.hit{background:gold;}
+    .csheet-next-ms{font-size:11px;color:var(--muted);margin-top:6px;text-align:center;}
+    .csheet-section{padding:10px 16px 0;}
+    .csheet-section-title{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .csheet-week-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .csheet-week-bar-track{height:6px;background:var(--surface2);border-radius:3px;flex:1;margin:0 10px;}
+    .csheet-week-bar-fill{height:100%;border-radius:3px;background:var(--purple);transition:width 0.3s;}
+    .csheet-week-lbl{font-family:var(--fd);font-size:12px;font-weight:700;white-space:nowrap;}
+    .csheet-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px;}
+    .csheet-day-cell{background:var(--surface2);border-radius:6px;padding:5px 2px;text-align:center;}
+    .csheet-day-cell.done{background:rgba(26,188,156,0.2);border:1px solid rgba(26,188,156,0.5);}
+    .csheet-day-cell.partial{background:rgba(243,156,18,0.12);border:1px solid rgba(243,156,18,0.4);}
+    .csheet-day-cell.today-cell{outline:2px solid var(--teal);outline-offset:1px;}
+    .csheet-day-lbl{font-size:8px;color:var(--muted);font-family:var(--fd);font-weight:700;}
+    .csheet-day-val{font-size:10px;font-weight:700;margin-top:2px;font-family:var(--fd);}
+    .csheet-task-list{display:flex;flex-direction:column;gap:6px;padding:0 16px 10px;}
+    .csheet-task{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .csheet-task:active{opacity:0.75;}
+    .csheet-task.done-task{opacity:0.45;pointer-events:none;}
+    .csheet-task-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+    .csheet-task.done-task .csheet-task-chk{background:var(--green);border-color:var(--green);}
+    .csheet-task.done-task .csheet-task-chk::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
+    .csheet-task-label{font-family:var(--fd);font-size:15px;font-weight:700;}
+    .csheet-task-sub{font-size:11px;color:var(--muted);}
+    .csheet-bonus-row{display:flex;gap:8px;padding:0 16px 10px;align-items:center;}
+    .csheet-bonus-inp{background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:14px;font-family:var(--fb);outline:none;flex:1;}
+    .csheet-bonus-btn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--fd);font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;}
+    .csheet-bonus-btn:active{opacity:0.8;}
+    .csheet-close-btn{display:block;margin:10px 16px 0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px;font-family:var(--fd);font-size:14px;font-weight:700;color:var(--text);cursor:pointer;text-align:center;width:calc(100% - 32px);}
+    .csheet-celebrate{background:linear-gradient(135deg,rgba(255,215,0,0.12),rgba(26,188,156,0.08));border:1px solid gold;border-radius:10px;padding:12px 14px;margin:0 16px 10px;text-align:center;}
+    .csheet-celebrate-title{font-family:var(--fd);font-size:16px;font-weight:800;color:gold;letter-spacing:1px;}
+    .csheet-celebrate-sub{font-size:12px;color:rgba(232,232,240,0.75);margin-top:3px;}
+    .cmodal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+    .cmodal-overlay.open{opacity:1;pointer-events:all;}
+    .cmodal{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:480px;padding:16px 16px 36px;max-height:85vh;overflow-y:auto;}
+    .cmodal-title{font-family:var(--fd);font-size:20px;font-weight:800;letter-spacing:1px;margin-bottom:14px;}
+    .cmodal-label{font-size:11px;color:var(--muted);font-family:var(--fd);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+    .cmodal-inp{background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:15px;font-family:var(--fb);outline:none;width:100%;margin-bottom:12px;}
+    .cmodal-ex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+    .cmodal-ex-btn{background:var(--surface2);border:2px solid transparent;border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .cmodal-ex-btn.selected{border-color:var(--teal);}
+    .cmodal-ex-btn.disabled{opacity:0.3;pointer-events:none;}
+    .cmodal-ex-emoji{font-size:24px;}
+    .cmodal-ex-name{font-family:var(--fd);font-size:12px;font-weight:700;margin-top:4px;}
+    .cmodal-preview{font-size:12px;color:var(--teal);margin-bottom:12px;font-family:var(--fd);font-weight:700;}
+    .cmodal-ms-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+    .cmodal-ms-tag{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--fd);font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;}
+    .cmodal-ms-del{color:var(--red);cursor:pointer;font-size:14px;line-height:1;}
+    .cmodal-ms-add-row{display:flex;gap:6px;margin-bottom:12px;}
+    .cmodal-save-btn{background:var(--teal);color:#000;border:none;border-radius:10px;padding:13px;font-family:var(--fd);font-size:16px;font-weight:800;width:100%;cursor:pointer;margin-top:4px;}
+    .cmodal-cancel-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px;font-family:var(--fd);font-size:14px;font-weight:700;width:100%;cursor:pointer;margin-top:8px;}
     .import-preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
     .import-preview-overlay.open{opacity:1;pointer-events:all;}
     .import-preview-sheet{background:var(--surface);border-radius:18px 18px 0 0;padding:20px 16px 32px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto;}
@@ -865,6 +950,7 @@
     </div>
     <div id="today-streak-pill" class="today-streak" style="display:none">🔥 <span id="today-streak-num">0</span> day streak</div>
   </div>
+  <div id="challenge-strip-wrap" style="padding:0 16px;"></div>
   <div class="today-body" id="today-body"></div>
 </div>
 
@@ -947,6 +1033,7 @@
   </div>
   <div class="day-sel" id="wo-day-sel"></div>
   <div id="wo-day-hdr"></div>
+  <div id="wo-challenge-wrap" style="padding:0 16px;"></div>
   <div id="exercises"></div>
   <div class="session-notes-wrap">
     <div class="session-notes-card">
@@ -1345,13 +1432,14 @@
 // ═══════════════════════════════════════════════════
 // DATA VERSION & MIGRATION
 // ═══════════════════════════════════════════════════
-const DATA_VERSION = 4;
+const DATA_VERSION = 5;
 
 function migrate(s) {
   let v = s.version || 1;
   if (v < 2) { s.mealCustom = {}; v = 2; }
   if (v < 3) { s.tasks = []; s.notes = []; s.calMonth = null; s.calSelDate = null; s.noteFilter = null; v = 3; }
   if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; s.autoBackupFileName = null; s.lastAutoBackup = null; s.exCustom = {}; s.sessionNotes = {}; s.weightLog = []; s.measurements = {}; s.prs = []; s.bodyTab = 'weight'; v = 4; }
+  if (v < 5) { s.challenges = {}; v = 5; }
   // Data hygiene: prune taskDone entries older than 90 days
   if (s.taskDone) {
     const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
@@ -1429,7 +1517,7 @@ function defaultState(){
     mealRotation:'A',theme:'dark',onboardingDone:false,
     autoBackupFileName:null,lastAutoBackup:null,
     exCustom:{},sessionNotes:{},
-    weightLog:[],measurements:{},prs:[],bodyTab:'weight',progressPhotos:[]};
+    weightLog:[],measurements:{},prs:[],bodyTab:'weight',progressPhotos:[],challenges:{}};
 }
 let S=loadState();
 function save(){
@@ -1473,7 +1561,8 @@ function switchTab(tab){
   if(tab==='schedule')renderSchedule();
   if(tab==='notes')renderNotes();
   if(tab==='data')renderDataPage();
-  if(tab==='today')renderToday();
+  if(tab==='today'){renderToday();renderChallengeStrip();}
+  if(tab==='workout')renderWorkoutChallengeBanner();
   if(tab==='body')renderBodyPage();
   save();
 }
@@ -1610,6 +1699,7 @@ function woDayPct(di){
 function woWeekPct(){return Math.round(WORKOUTS.reduce((a,_,i)=>a+woDayPct(i),0)/7);}
 
 function renderWorkout(){
+  renderWorkoutChallengeBanner();
   // Preserve scroll position
   const pageEl = document.getElementById('page-workout');
   const scrollY = pageEl ? pageEl.scrollTop : 0;
@@ -2928,6 +3018,7 @@ async function updateAutoBackupUI() {
 // TODAY VIEW
 // ═══════════════════════════════════════════════════
 function renderToday() {
+  renderChallengeStrip();
   const now = new Date();
   document.getElementById('today-date-display').textContent =
     now.toLocaleDateString('en', { month: 'short', day: 'numeric' });
@@ -3356,6 +3447,379 @@ function openPhotoLightbox(photo) {
   });
 }
 
+// ── WEEKLY CHALLENGES ──
+
+const CHALLENGE_META = {
+  pushups: { label:'Push-ups', emoji:'💪', color:'var(--teal)' },
+  situps:  { label:'Sit-ups',  emoji:'🤸', color:'var(--yellow)' },
+  squats:  { label:'Squats',   emoji:'🦵', color:'var(--purple)' },
+};
+
+function getWeekMonday(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0,10);
+}
+
+function getWeekDates(mondayStr) {
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(mondayStr + 'T00:00:00');
+    d.setDate(d.getDate() + i);
+    dates.push(d.toISOString().slice(0,10));
+  }
+  return dates;
+}
+
+function getChallengeTotalDone(c) {
+  return Object.values(c.logs||{}).flat().reduce((a,e)=>a+e.reps,0);
+}
+
+function getChallengeWeekDone(c) {
+  const dates = getWeekDates(c.weekStart);
+  return dates.reduce((a,d)=>a+getChallengeDayDone(c,d),0);
+}
+
+function getChallengeDayDone(c, dateStr) {
+  return (c.logs[dateStr]||[]).reduce((a,e)=>a+e.reps,0);
+}
+
+function getDayTasksTotal(c) {
+  return Math.max(1, Math.ceil((c.weeklyGoal / 7) / c.taskSize));
+}
+
+function getDayTasksDone(c, dateStr) {
+  const entries = (c.logs[dateStr]||[]).filter(e=>!e.bonus);
+  return entries.length;
+}
+
+function checkWeekReset(c) {
+  const monday = getWeekMonday(todayStr());
+  if (c.weekStart !== monday) { c.weekStart = monday; }
+}
+
+function checkMilestones(c) {
+  const total = getChallengeTotalDone(c);
+  if (!c.milestonesHit) c.milestonesHit = [];
+  let newHit = null;
+  c.milestones.forEach(ms => {
+    if (total >= ms && !c.milestonesHit.includes(ms)) {
+      c.milestonesHit.push(ms);
+      newHit = ms;
+    }
+  });
+  if (newHit !== null) {
+    const meta = CHALLENGE_META[c.exercise];
+    toast(`🎉 Milestone! ${newHit} ${meta.label} done!`, 'var(--teal)');
+    if (!c.celebratePending) c.celebratePending = [];
+    c.celebratePending.push(newHit);
+  }
+}
+
+function logChallengeReps(key, reps, bonus) {
+  if (!reps || reps < 1) return;
+  const c = S.challenges[key];
+  if (!c) return;
+  checkWeekReset(c);
+  const today = todayStr();
+  if (!c.logs[today]) c.logs[today] = [];
+  c.logs[today].push({ id: Date.now(), reps, bonus: !!bonus });
+  checkMilestones(c);
+  save();
+  renderChallengeStrip();
+  renderWorkoutChallengeBanner();
+  // Re-render sheet if open
+  const overlay = document.getElementById('csheet-overlay');
+  if (overlay && overlay.classList.contains('open')) renderChallengeSheet(key);
+}
+
+// ── CHALLENGE RENDER ──
+
+function renderChallengeStrip() {
+  const wrap = document.getElementById('challenge-strip-wrap');
+  if (!wrap) return;
+  const active = Object.entries(S.challenges||{}).filter(([,c])=>c);
+  wrap.innerHTML = '';
+  const strip = document.createElement('div');
+  strip.className = 'challenge-strip';
+  active.forEach(([key,c]) => {
+    checkWeekReset(c);
+    const meta = CHALLENGE_META[key];
+    const total = getChallengeTotalDone(c);
+    const pct = Math.min(100, Math.round((total / c.totalGoal) * 100));
+    const tasksDone = getDayTasksDone(c, todayStr());
+    const tasksTotal = getDayTasksTotal(c);
+    const row = document.createElement('div');
+    row.className = 'challenge-strip-row';
+    row.innerHTML = `
+      <div class="challenge-strip-icon">${meta.emoji}</div>
+      <div class="challenge-strip-info">
+        <div class="challenge-strip-name">${meta.label} Challenge</div>
+        <div class="challenge-strip-sub">${total} / ${c.totalGoal} total · Today ${tasksDone}/${tasksTotal} tasks</div>
+        <div class="challenge-strip-bar-track"><div class="challenge-strip-bar-fill" style="width:${pct}%;background:${meta.color}"></div></div>
+      </div>
+      <div class="challenge-strip-arrow">›</div>`;
+    row.addEventListener('click', () => openChallengeSheet(key));
+    strip.appendChild(row);
+  });
+  // New challenge button (if < 3 active)
+  const available = ['pushups','situps','squats'].filter(k=>!S.challenges[k]);
+  if (available.length > 0) {
+    const btn = document.createElement('button');
+    btn.className = 'challenge-new-btn';
+    btn.innerHTML = '＋ New Weekly Challenge';
+    btn.addEventListener('click', openChallengeModal);
+    strip.appendChild(btn);
+  }
+  wrap.appendChild(strip);
+}
+
+function renderWorkoutChallengeBanner() {
+  const wrap = document.getElementById('wo-challenge-wrap');
+  if (!wrap) return;
+  const active = Object.entries(S.challenges||{}).filter(([,c])=>c);
+  if (!active.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = '';
+  active.forEach(([key,c]) => {
+    checkWeekReset(c);
+    const meta = CHALLENGE_META[key];
+    const total = getChallengeTotalDone(c);
+    const pct = Math.min(100, Math.round((total / c.totalGoal) * 100));
+    const tasksDone = getDayTasksDone(c, todayStr());
+    const tasksTotal = getDayTasksTotal(c);
+    // Milestone pips
+    const pips = (c.milestones||[]).map(ms => {
+      const mpct = Math.min(100, (ms / c.totalGoal) * 100);
+      const hit = (c.milestonesHit||[]).includes(ms);
+      return `<div class="milestone-pip${hit?' hit':''}" style="left:${mpct}%"></div>`;
+    }).join('');
+    const banner = document.createElement('div');
+    banner.className = 'wo-challenge-banner';
+    banner.innerHTML = `
+      <div class="wo-challenge-banner-row">
+        <span>${meta.emoji}</span>
+        <span class="wo-challenge-banner-name">${meta.label} Challenge</span>
+        <span class="wo-challenge-banner-count">Today ${tasksDone}/${tasksTotal} · ${total}/${c.totalGoal}</span>
+      </div>
+      <div class="wo-challenge-bar-track">${pips}<div class="wo-challenge-bar-fill" style="width:${pct}%;background:${meta.color}"></div></div>`;
+    banner.addEventListener('click', () => openChallengeSheet(key));
+    wrap.appendChild(banner);
+  });
+}
+
+function openChallengeSheet(key) {
+  renderChallengeSheet(key);
+  document.getElementById('csheet-overlay').classList.add('open');
+}
+
+function closeChallengeSheet() {
+  document.getElementById('csheet-overlay').classList.remove('open');
+}
+
+function renderChallengeSheet(key) {
+  const c = S.challenges[key];
+  if (!c) return;
+  checkWeekReset(c);
+  const meta = CHALLENGE_META[key];
+  const total = getChallengeTotalDone(c);
+  const weekDone = getChallengeWeekDone(c);
+  const pct = Math.min(100, (total / c.totalGoal) * 100);
+  const weekPct = Math.min(100, (weekDone / c.weeklyGoal) * 100);
+  const today = todayStr();
+  const tasksDone = getDayTasksDone(c, today);
+  const tasksTotal = getDayTasksTotal(c);
+
+  // Next milestone
+  const nextMs = (c.milestones||[]).slice().sort((a,b)=>a-b).find(ms=>total < ms);
+  const nextMsText = nextMs ? `${nextMs - total} reps to ${nextMs} milestone` : '🎉 All milestones hit!';
+
+  // Milestone pips on main bar
+  const pips = (c.milestones||[]).map(ms => {
+    const mpct = Math.min(100,(ms/c.totalGoal)*100);
+    const hit = (c.milestonesHit||[]).includes(ms);
+    return `<div class="csheet-milestone-pip${hit?' hit':''}" style="left:${mpct}%"></div>`;
+  }).join('');
+
+  // 7-day grid
+  const weekDates = getWeekDates(c.weekStart);
+  const dayLabels = ['M','T','W','T','F','S','S'];
+  const dayCells = weekDates.map((d,i) => {
+    const done = getChallengeDayDone(c,d);
+    const dailyTarget = Math.round(c.weeklyGoal / 7);
+    const isToday = d === today;
+    let cls = 'csheet-day-cell';
+    if (done >= dailyTarget) cls += ' done';
+    else if (done > 0) cls += ' partial';
+    if (isToday) cls += ' today-cell';
+    return `<div class="${cls}"><div class="csheet-day-lbl">${dayLabels[i]}</div><div class="csheet-day-val">${done>0?done:'—'}</div></div>`;
+  }).join('');
+
+  // Task list for today
+  const tasks = Array.from({length:tasksTotal},(_,i) => {
+    const done = i < tasksDone;
+    return `<div class="csheet-task${done?' done-task':''}" data-idx="${i}">
+      <div class="csheet-task-chk"></div>
+      <div><div class="csheet-task-label">${c.taskSize} ${meta.label}</div>
+      <div class="csheet-task-sub">Task ${i+1} of ${tasksTotal}</div></div>
+    </div>`;
+  }).join('');
+
+  // Celebration card
+  const celebrate = (c.celebratePending||[]).length > 0
+    ? `<div class="csheet-celebrate">
+        <div class="csheet-celebrate-title">🏆 Milestone Reached!</div>
+        <div class="csheet-celebrate-sub">${c.celebratePending[c.celebratePending.length-1]} ${meta.label} completed!</div>
+       </div>` : '';
+
+  const el = document.getElementById('csheet-content');
+  el.innerHTML = `
+    <div class="csheet-hdr">
+      <div class="csheet-title">${meta.emoji} ${meta.label}</div>
+    </div>
+    ${celebrate}
+    <div class="csheet-prog-wrap">
+      <div class="csheet-prog-label"><span>TOTAL PROGRESS</span><span>${total} / ${c.totalGoal}</span></div>
+      <div class="csheet-prog-track">${pips}<div class="csheet-prog-fill" style="width:${pct}%;background:${meta.color}"></div></div>
+      <div class="csheet-next-ms">${nextMsText}</div>
+    </div>
+    <div class="csheet-section">
+      <div class="csheet-section-title">This Week</div>
+      <div class="csheet-week-row">
+        <span class="csheet-week-lbl">${weekDone}</span>
+        <div class="csheet-week-bar-track"><div class="csheet-week-bar-fill" style="width:${weekPct}%"></div></div>
+        <span class="csheet-week-lbl">${c.weeklyGoal}</span>
+      </div>
+      <div class="csheet-day-grid">${dayCells}</div>
+    </div>
+    <div class="csheet-section">
+      <div class="csheet-section-title">Today's Tasks (${tasksDone}/${tasksTotal} done)</div>
+    </div>
+    <div class="csheet-task-list" id="csheet-tasks">${tasks}</div>
+    <div class="csheet-section" style="padding-bottom:8px;">
+      <div class="csheet-section-title">Bonus Reps</div>
+    </div>
+    <div class="csheet-bonus-row">
+      <input class="csheet-bonus-inp" id="csheet-bonus-inp" type="number" inputmode="numeric" placeholder="e.g. 15"/>
+      <button class="csheet-bonus-btn" id="csheet-bonus-btn">＋ Log</button>
+    </div>`;
+
+  // Bind task clicks
+  el.querySelectorAll('.csheet-task:not(.done-task)').forEach(t => {
+    t.addEventListener('click', () => {
+      logChallengeReps(key, c.taskSize, false);
+      if (navigator.vibrate) navigator.vibrate(8);
+    });
+  });
+
+  // Bind bonus log
+  el.querySelector('#csheet-bonus-btn').addEventListener('click', () => {
+    const val = parseInt(el.querySelector('#csheet-bonus-inp').value);
+    if (!val || val < 1) return;
+    logChallengeReps(key, val, true);
+    el.querySelector('#csheet-bonus-inp').value = '';
+    if (navigator.vibrate) navigator.vibrate(8);
+  });
+
+  // Clear celebrate pending after showing
+  if (c.celebratePending && c.celebratePending.length > 0) {
+    c.celebratePending = [];
+    save();
+  }
+}
+
+// ── NEW CHALLENGE MODAL ──
+
+let _cmodalEx = null;
+let _cmodalMilestones = [];
+
+function openChallengeModal() {
+  _cmodalEx = null;
+  _cmodalMilestones = [100, 500, 1000];
+  document.getElementById('cmodal-total').value = '1000';
+  document.getElementById('cmodal-weekly').value = '200';
+  document.getElementById('cmodal-tasksize').value = '20';
+  // Mark already-active exercises as disabled
+  document.querySelectorAll('.cmodal-ex-btn').forEach(btn => {
+    const key = btn.dataset.key;
+    btn.classList.remove('selected','disabled');
+    if (S.challenges[key]) btn.classList.add('disabled');
+  });
+  updateCmodalMsRow();
+  updateCmodalPreview();
+  document.getElementById('cmodal-overlay').classList.add('open');
+}
+
+function closeChallengeModal() {
+  document.getElementById('cmodal-overlay').classList.remove('open');
+}
+
+function selectChallengeEx(key) {
+  _cmodalEx = key;
+  document.querySelectorAll('.cmodal-ex-btn').forEach(b => b.classList.remove('selected'));
+  const btn = document.querySelector(`.cmodal-ex-btn[data-key="${key}"]`);
+  if (btn) btn.classList.add('selected');
+  // Default milestones based on total goal
+  const total = parseInt(document.getElementById('cmodal-total').value)||1000;
+  _cmodalMilestones = [Math.round(total*0.1), Math.round(total*0.5), total].filter((v,i,a)=>a.indexOf(v)===i);
+  updateCmodalMsRow();
+  updateCmodalPreview();
+}
+
+function updateCmodalPreview() {
+  const weekly = parseInt(document.getElementById('cmodal-weekly').value)||200;
+  const taskSize = parseInt(document.getElementById('cmodal-tasksize').value)||20;
+  const perDay = Math.max(1, Math.ceil((weekly / 7) / taskSize));
+  document.getElementById('cmodal-preview').textContent = `= ${perDay} task${perDay!==1?'s':''}/day (${taskSize} reps each)`;
+}
+
+function updateCmodalMsRow() {
+  const row = document.getElementById('cmodal-ms-row');
+  row.innerHTML = _cmodalMilestones.sort((a,b)=>a-b).map(ms =>
+    `<div class="cmodal-ms-tag">${ms} <span class="cmodal-ms-del" data-ms="${ms}">✕</span></div>`
+  ).join('');
+  row.querySelectorAll('.cmodal-ms-del').forEach(x => {
+    x.addEventListener('click', () => {
+      _cmodalMilestones = _cmodalMilestones.filter(m => m !== parseInt(x.dataset.ms));
+      updateCmodalMsRow();
+    });
+  });
+}
+
+function addCmodalMilestone() {
+  const val = parseInt(document.getElementById('cmodal-ms-inp').value);
+  if (!val || val < 1) return;
+  if (!_cmodalMilestones.includes(val)) _cmodalMilestones.push(val);
+  document.getElementById('cmodal-ms-inp').value = '';
+  updateCmodalMsRow();
+}
+
+function saveNewChallenge() {
+  if (!_cmodalEx) { toast('Pick an exercise first', 'var(--red)'); return; }
+  const total  = parseInt(document.getElementById('cmodal-total').value)||1000;
+  const weekly = parseInt(document.getElementById('cmodal-weekly').value)||200;
+  const task   = parseInt(document.getElementById('cmodal-tasksize').value)||20;
+  if (!S.challenges) S.challenges = {};
+  S.challenges[_cmodalEx] = {
+    exercise: _cmodalEx,
+    totalGoal: total,
+    weeklyGoal: weekly,
+    taskSize: task,
+    milestones: _cmodalMilestones.slice().sort((a,b)=>a-b),
+    weekStart: getWeekMonday(todayStr()),
+    logs: {},
+    milestonesHit: [],
+    celebratePending: [],
+    createdAt: nowISO(),
+  };
+  save();
+  closeChallengeModal();
+  renderChallengeStrip();
+  renderWorkoutChallengeBanner();
+  toast(`🏆 ${CHALLENGE_META[_cmodalEx].label} challenge started!`, 'var(--teal)');
+}
+
 // ── PERSONAL RECORDS ──
 function logPR() {
   const ex  = document.getElementById('pr-ex-inp').value.trim();
@@ -3461,6 +3925,9 @@ document.getElementById('ml-reset-btn').onclick=()=>{
 ['shop-modal','meal-modal','task-modal','quickadd-modal','ex-edit-modal','task-edit-modal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');});
 });
+// Challenge sheet + modal backdrop close
+document.getElementById('csheet-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('csheet-overlay'))closeChallengeSheet();});
+document.getElementById('cmodal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('cmodal-overlay'))closeChallengeModal();});
 // Tap outside input to dismiss keyboard
 document.addEventListener('touchend', e => {
   const tag = e.target.tagName;
@@ -3493,6 +3960,10 @@ save();
 
 switchTab(S.activeTab);
 renderWorkout();
+renderChallengeStrip();
+renderWorkoutChallengeBanner();
+// Check all active challenges for week reset on open
+Object.values(S.challenges||{}).forEach(c=>{ if(c) checkWeekReset(c); });
 renderMeals();
 updateSchedBadge();
 checkOnboarding();
@@ -3502,6 +3973,43 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 </script>
+<!-- CHALLENGE DETAIL SHEET -->
+<div class="csheet-overlay" id="csheet-overlay">
+  <div class="csheet">
+    <div class="csheet-handle"></div>
+    <div id="csheet-content"></div>
+    <button class="csheet-close-btn" onclick="closeChallengeSheet()">Close</button>
+  </div>
+</div>
+
+<!-- NEW CHALLENGE MODAL -->
+<div class="cmodal-overlay" id="cmodal-overlay">
+  <div class="cmodal">
+    <div class="cmodal-title">🏆 New Challenge</div>
+    <div class="cmodal-label">Exercise</div>
+    <div class="cmodal-ex-grid" id="cmodal-ex-grid">
+      <div class="cmodal-ex-btn" data-key="pushups" onclick="selectChallengeEx('pushups')"><div class="cmodal-ex-emoji">💪</div><div class="cmodal-ex-name">Push-ups</div></div>
+      <div class="cmodal-ex-btn" data-key="situps"  onclick="selectChallengeEx('situps')"><div class="cmodal-ex-emoji">🤸</div><div class="cmodal-ex-name">Sit-ups</div></div>
+      <div class="cmodal-ex-btn" data-key="squats"  onclick="selectChallengeEx('squats')"><div class="cmodal-ex-emoji">🦵</div><div class="cmodal-ex-name">Squats</div></div>
+    </div>
+    <div class="cmodal-label">Total Goal (reps)</div>
+    <input class="cmodal-inp" id="cmodal-total" type="number" inputmode="numeric" value="1000" oninput="updateCmodalPreview()"/>
+    <div class="cmodal-label">Weekly Goal (reps)</div>
+    <input class="cmodal-inp" id="cmodal-weekly" type="number" inputmode="numeric" value="200" oninput="updateCmodalPreview()"/>
+    <div class="cmodal-label">Task Size (reps per task)</div>
+    <input class="cmodal-inp" id="cmodal-tasksize" type="number" inputmode="numeric" value="20" oninput="updateCmodalPreview()"/>
+    <div class="cmodal-preview" id="cmodal-preview">= 10 tasks/day</div>
+    <div class="cmodal-label">Milestones</div>
+    <div class="cmodal-ms-row" id="cmodal-ms-row"></div>
+    <div class="cmodal-ms-add-row">
+      <input class="cmodal-inp" id="cmodal-ms-inp" type="number" inputmode="numeric" placeholder="Add milestone…" style="margin:0;flex:1;"/>
+      <button class="csheet-bonus-btn" onclick="addCmodalMilestone()">＋</button>
+    </div>
+    <button class="cmodal-save-btn" onclick="saveNewChallenge()">Start Challenge</button>
+    <button class="cmodal-cancel-btn" onclick="closeChallengeModal()">Cancel</button>
+  </div>
+</div>
+
 <div class="import-preview-overlay" id="import-preview-overlay">
   <div class="import-preview-sheet">
     <div class="import-preview-title">📦 Import Preview</div>
