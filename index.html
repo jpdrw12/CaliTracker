@@ -2841,11 +2841,15 @@ function startRestTimer(seconds) {
 }
 
 function playDing() {
-  try {
-    const a = document.getElementById('ding-audio');
-    a.currentTime = 0;
-    a.play();
-  } catch(e) {}
+  const a = document.getElementById('ding-audio');
+  if (!a) return;
+  a.currentTime = 0;
+  a.play().catch(() => {
+    // Browser blocked autoplay — retry on next user gesture
+    const retry = () => { a.currentTime = 0; a.play().catch(()=>{}); };
+    document.addEventListener('click', retry, { once: true });
+    document.addEventListener('touchstart', retry, { once: true });
+  });
 }
 
 function skipRestTimer() {
@@ -4078,10 +4082,7 @@ initKeyboardToolbar();
 // INIT
 // ═══════════════════════════════════════════════════
 // Unlock audio on first user interaction (required by mobile browsers)
-document.addEventListener('click', function unlockAudio() {
-  const a = document.getElementById('ding-audio');
-  if (a) { a.volume = 0; a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = 1; }).catch(() => { a.volume = 1; }); }
-}, { once: true });
+
 
   if (!S.lastOpenedDate || S.lastOpenedDate !== todayStr()) {
     autoSelectToday();
