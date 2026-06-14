@@ -1559,10 +1559,11 @@ function switchTab(tab){
   document.getElementById('shop-btn').classList.toggle('visible',tab==='meals');
   document.getElementById('today-fab').classList.toggle('visible',tab==='today');
   if(tab==='schedule')renderSchedule();
+  if(tab==='meals')renderMeals();
   if(tab==='notes')renderNotes();
   if(tab==='data')renderDataPage();
-  if(tab==='today'){renderToday();renderChallengeStrip();}
-  if(tab==='workout')renderWorkoutChallengeBanner();
+  if(tab==='today')renderToday();
+  if(tab==='workout')renderWorkout();
   if(tab==='body')renderBodyPage();
   save();
 }
@@ -3018,7 +3019,6 @@ async function updateAutoBackupUI() {
 // TODAY VIEW
 // ═══════════════════════════════════════════════════
 function renderToday() {
-  try{renderChallengeStrip();}catch(e){}
   const now = new Date();
   document.getElementById('today-date-display').textContent =
     now.toLocaleDateString('en', { month: 'short', day: 'numeric' });
@@ -3195,6 +3195,7 @@ function renderToday() {
     });
     body.appendChild(noteSection);
   }
+  try{renderChallengeStrip();}catch(e){}
 }
 
 // ═══════════════════════════════════════════════════
