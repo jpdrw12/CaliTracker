@@ -3990,7 +3990,6 @@ document.addEventListener('touchstart', function unlockAudio() {
   document.removeEventListener('touchstart', unlockAudio);
 }, { once: true });
 
-document.addEventListener('DOMContentLoaded', () => {
   if (!S.lastOpenedDate || S.lastOpenedDate !== todayStr()) {
     autoSelectToday();
   }
@@ -4010,7 +4009,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   }
-});
 </script>
 
 
