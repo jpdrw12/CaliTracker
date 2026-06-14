@@ -1428,6 +1428,43 @@
   </div>
 </div>
 
+<!-- CHALLENGE DETAIL SHEET -->
+<div class="csheet-overlay" id="csheet-overlay">
+  <div class="csheet">
+    <div class="csheet-handle"></div>
+    <div id="csheet-content"></div>
+    <button class="csheet-close-btn" onclick="closeChallengeSheet()">Close</button>
+  </div>
+</div>
+
+<!-- NEW CHALLENGE MODAL -->
+<div class="cmodal-overlay" id="cmodal-overlay">
+  <div class="cmodal">
+    <div class="cmodal-title">🏆 New Challenge</div>
+    <div class="cmodal-label">Exercise</div>
+    <div class="cmodal-ex-grid" id="cmodal-ex-grid">
+      <div class="cmodal-ex-btn" data-key="pushups" onclick="selectChallengeEx('pushups')"><div class="cmodal-ex-emoji">💪</div><div class="cmodal-ex-name">Push-ups</div></div>
+      <div class="cmodal-ex-btn" data-key="situps"  onclick="selectChallengeEx('situps')"><div class="cmodal-ex-emoji">🤸</div><div class="cmodal-ex-name">Sit-ups</div></div>
+      <div class="cmodal-ex-btn" data-key="squats"  onclick="selectChallengeEx('squats')"><div class="cmodal-ex-emoji">🦵</div><div class="cmodal-ex-name">Squats</div></div>
+    </div>
+    <div class="cmodal-label">Total Goal (reps)</div>
+    <input class="cmodal-inp" id="cmodal-total" type="number" inputmode="numeric" value="1000" oninput="updateCmodalPreview()"/>
+    <div class="cmodal-label">Weekly Goal (reps)</div>
+    <input class="cmodal-inp" id="cmodal-weekly" type="number" inputmode="numeric" value="200" oninput="updateCmodalPreview()"/>
+    <div class="cmodal-label">Task Size (reps per task)</div>
+    <input class="cmodal-inp" id="cmodal-tasksize" type="number" inputmode="numeric" value="20" oninput="updateCmodalPreview()"/>
+    <div class="cmodal-preview" id="cmodal-preview">= 10 tasks/day</div>
+    <div class="cmodal-label">Milestones</div>
+    <div class="cmodal-ms-row" id="cmodal-ms-row"></div>
+    <div class="cmodal-ms-add-row">
+      <input class="cmodal-inp" id="cmodal-ms-inp" type="number" inputmode="numeric" placeholder="Add milestone…" style="margin:0;flex:1;"/>
+      <button class="csheet-bonus-btn" onclick="addCmodalMilestone()">＋</button>
+    </div>
+    <button class="cmodal-save-btn" onclick="saveNewChallenge()">Start Challenge</button>
+    <button class="cmodal-cancel-btn" onclick="closeChallengeModal()">Cancel</button>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════
 // DATA VERSION & MIGRATION
@@ -3962,7 +3999,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTheme(S.theme || 'dark');
   save();
 
-  switchTab(S.activeTab);
+  switchTab('today');
   renderWorkout();
   renderMeals();
   updateSchedBadge();
@@ -3975,42 +4012,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-<!-- CHALLENGE DETAIL SHEET -->
-<div class="csheet-overlay" id="csheet-overlay">
-  <div class="csheet">
-    <div class="csheet-handle"></div>
-    <div id="csheet-content"></div>
-    <button class="csheet-close-btn" onclick="closeChallengeSheet()">Close</button>
-  </div>
-</div>
 
-<!-- NEW CHALLENGE MODAL -->
-<div class="cmodal-overlay" id="cmodal-overlay">
-  <div class="cmodal">
-    <div class="cmodal-title">🏆 New Challenge</div>
-    <div class="cmodal-label">Exercise</div>
-    <div class="cmodal-ex-grid" id="cmodal-ex-grid">
-      <div class="cmodal-ex-btn" data-key="pushups" onclick="selectChallengeEx('pushups')"><div class="cmodal-ex-emoji">💪</div><div class="cmodal-ex-name">Push-ups</div></div>
-      <div class="cmodal-ex-btn" data-key="situps"  onclick="selectChallengeEx('situps')"><div class="cmodal-ex-emoji">🤸</div><div class="cmodal-ex-name">Sit-ups</div></div>
-      <div class="cmodal-ex-btn" data-key="squats"  onclick="selectChallengeEx('squats')"><div class="cmodal-ex-emoji">🦵</div><div class="cmodal-ex-name">Squats</div></div>
-    </div>
-    <div class="cmodal-label">Total Goal (reps)</div>
-    <input class="cmodal-inp" id="cmodal-total" type="number" inputmode="numeric" value="1000" oninput="updateCmodalPreview()"/>
-    <div class="cmodal-label">Weekly Goal (reps)</div>
-    <input class="cmodal-inp" id="cmodal-weekly" type="number" inputmode="numeric" value="200" oninput="updateCmodalPreview()"/>
-    <div class="cmodal-label">Task Size (reps per task)</div>
-    <input class="cmodal-inp" id="cmodal-tasksize" type="number" inputmode="numeric" value="20" oninput="updateCmodalPreview()"/>
-    <div class="cmodal-preview" id="cmodal-preview">= 10 tasks/day</div>
-    <div class="cmodal-label">Milestones</div>
-    <div class="cmodal-ms-row" id="cmodal-ms-row"></div>
-    <div class="cmodal-ms-add-row">
-      <input class="cmodal-inp" id="cmodal-ms-inp" type="number" inputmode="numeric" placeholder="Add milestone…" style="margin:0;flex:1;"/>
-      <button class="csheet-bonus-btn" onclick="addCmodalMilestone()">＋</button>
-    </div>
-    <button class="cmodal-save-btn" onclick="saveNewChallenge()">Start Challenge</button>
-    <button class="cmodal-cancel-btn" onclick="closeChallengeModal()">Cancel</button>
-  </div>
-</div>
 
 <div class="import-preview-overlay" id="import-preview-overlay">
   <div class="import-preview-sheet">
