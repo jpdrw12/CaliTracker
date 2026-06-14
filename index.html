@@ -692,7 +692,11 @@
     .csheet-overlay.open{opacity:1;pointer-events:all;}
     .csheet{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:0 0 32px;}
     .csheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0;}
-    .csheet-hdr{padding:14px 16px 10px;}
+    .csheet-hdr{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+    .csheet-hdr-actions{display:flex;gap:8px;}
+    .csheet-hdr-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;}
+    .csheet-hdr-btn.del{border-color:rgba(231,76,60,0.4);color:var(--red);}
+    .csheet-hdr-btn:active{opacity:0.7;}
     .csheet-title{font-family:var(--fd);font-size:22px;font-weight:800;letter-spacing:1px;}
     .csheet-prog-wrap{margin:0 16px 14px;}
     .csheet-prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:var(--fd);font-weight:700;}
@@ -1440,7 +1444,7 @@
 <!-- NEW CHALLENGE MODAL -->
 <div class="cmodal-overlay" id="cmodal-overlay">
   <div class="cmodal">
-    <div class="cmodal-title">🏆 New Challenge</div>
+    <div class="cmodal-title" id="cmodal-title">🏆 New Challenge</div>
     <div class="cmodal-label">Exercise</div>
     <div class="cmodal-ex-grid" id="cmodal-ex-grid">
       <div class="cmodal-ex-btn" data-key="pushups" onclick="selectChallengeEx('pushups')"><div class="cmodal-ex-emoji">💪</div><div class="cmodal-ex-name">Push-ups</div></div>
@@ -1460,7 +1464,7 @@
       <input class="cmodal-inp" id="cmodal-ms-inp" type="number" inputmode="numeric" placeholder="Add milestone…" style="margin:0;flex:1;"/>
       <button class="csheet-bonus-btn" onclick="addCmodalMilestone()">＋</button>
     </div>
-    <button class="cmodal-save-btn" onclick="saveNewChallenge()">Start Challenge</button>
+    <button class="cmodal-save-btn" id="cmodal-save-btn" onclick="saveNewChallenge()">Start Challenge</button>
     <button class="cmodal-cancel-btn" onclick="closeChallengeModal()">Cancel</button>
   </div>
 </div>
@@ -3717,6 +3721,10 @@ function renderChallengeSheet(key) {
   el.innerHTML = `
     <div class="csheet-hdr">
       <div class="csheet-title">${meta.emoji} ${meta.label}</div>
+      <div class="csheet-hdr-actions">
+        <button class="csheet-hdr-btn" id="csheet-edit-btn">✏️ Edit</button>
+        <button class="csheet-hdr-btn del" id="csheet-del-btn">🗑 Delete</button>
+      </div>
     </div>
     ${celebrate}
     <div class="csheet-prog-wrap">
@@ -3767,6 +3775,26 @@ function renderChallengeSheet(key) {
     c.celebratePending = [];
     save();
   }
+
+  // Edit / Delete button bindings
+  el.querySelector('#csheet-edit-btn').addEventListener('click', () => {
+    closeChallengeSheet();
+    openChallengeModal(key);
+  });
+  el.querySelector('#csheet-del-btn').addEventListener('click', () => {
+    deleteChallenge(key);
+  });
+}
+
+function deleteChallenge(key) {
+  const meta = CHALLENGE_META[key];
+  if (!confirm(`Delete the ${meta.label} challenge? All progress will be lost.`)) return;
+  delete S.challenges[key];
+  save();
+  closeChallengeSheet();
+  renderChallengeStrip();
+  renderWorkoutChallengeBanner();
+  toast(`${meta.label} challenge deleted`);
 }
 
 // ── NEW CHALLENGE MODAL ──
@@ -3774,18 +3802,43 @@ function renderChallengeSheet(key) {
 let _cmodalEx = null;
 let _cmodalMilestones = [];
 
-function openChallengeModal() {
-  _cmodalEx = null;
-  _cmodalMilestones = [100, 500, 1000];
-  document.getElementById('cmodal-total').value = '1000';
-  document.getElementById('cmodal-weekly').value = '200';
-  document.getElementById('cmodal-tasksize').value = '20';
-  // Mark already-active exercises as disabled
+let _cmodalEditKey = null;
+
+function openChallengeModal(editKey) {
+  _cmodalEditKey = editKey || null;
+  const c = editKey ? S.challenges[editKey] : null;
+
+  // Populate fields
+  _cmodalEx = editKey || null;
+  _cmodalMilestones = c ? c.milestones.slice() : [100, 500, 1000];
+  document.getElementById('cmodal-total').value    = c ? c.totalGoal  : '1000';
+  document.getElementById('cmodal-weekly').value   = c ? c.weeklyGoal : '200';
+  document.getElementById('cmodal-tasksize').value = c ? c.taskSize   : '20';
+
+  // Exercise buttons — in edit mode lock to current exercise, in new mode disable active ones
   document.querySelectorAll('.cmodal-ex-btn').forEach(btn => {
-    const key = btn.dataset.key;
     btn.classList.remove('selected','disabled');
-    if (S.challenges[key]) btn.classList.add('disabled');
+    if (editKey) {
+      if (btn.dataset.key === editKey) btn.classList.add('selected');
+      else btn.classList.add('disabled');
+    } else {
+      if (S.challenges[btn.dataset.key]) btn.classList.add('disabled');
+    }
   });
+
+  // Update modal title and save button
+  const titleEl = document.getElementById('cmodal-title');
+  const saveBtn = document.getElementById('cmodal-save-btn');
+  if (editKey) {
+    titleEl.textContent = `✏️ Edit ${CHALLENGE_META[editKey].label}`;
+    saveBtn.textContent = 'Save Changes';
+    saveBtn.onclick = updateChallenge;
+  } else {
+    titleEl.textContent = '🏆 New Challenge';
+    saveBtn.textContent = 'Start Challenge';
+    saveBtn.onclick = saveNewChallenge;
+  }
+
   updateCmodalMsRow();
   updateCmodalPreview();
   document.getElementById('cmodal-overlay').classList.add('open');
@@ -3858,6 +3911,26 @@ function saveNewChallenge() {
   renderChallengeStrip();
   renderWorkoutChallengeBanner();
   toast(`🏆 ${CHALLENGE_META[_cmodalEx].label} challenge started!`, 'var(--teal)');
+}
+
+function updateChallenge() {
+  const key = _cmodalEditKey;
+  if (!key || !S.challenges[key]) return;
+  const total  = parseInt(document.getElementById('cmodal-total').value)||1000;
+  const weekly = parseInt(document.getElementById('cmodal-weekly').value)||200;
+  const task   = parseInt(document.getElementById('cmodal-tasksize').value)||20;
+  const c = S.challenges[key];
+  c.totalGoal   = total;
+  c.weeklyGoal  = weekly;
+  c.taskSize    = task;
+  c.milestones  = _cmodalMilestones.slice().sort((a,b)=>a-b);
+  // Remove milestones already hit that are now above the new total goal
+  c.milestonesHit = (c.milestonesHit||[]).filter(ms => ms <= total);
+  save();
+  closeChallengeModal();
+  renderChallengeStrip();
+  renderWorkoutChallengeBanner();
+  toast(`✓ ${CHALLENGE_META[key].label} challenge updated`, 'var(--teal)');
 }
 
 // ── PERSONAL RECORDS ──
