@@ -3613,7 +3613,7 @@ function renderChallengeStrip() {
     const btn = document.createElement('button');
     btn.className = 'challenge-new-btn';
     btn.innerHTML = '＋ New Weekly Challenge';
-    btn.addEventListener('click', openChallengeModal);
+    btn.addEventListener('click', () => openChallengeModal());
     strip.appendChild(btn);
   }
   wrap.appendChild(strip);
