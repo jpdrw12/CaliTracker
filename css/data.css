@@ -21,3 +21,15 @@
    SCHEDULE PAGE
 ═══════════════════════════════════ */
 #page-schedule{padding-bottom:calc(var(--sab) + 65px);}
+
+/* ── COMPLETED CHALLENGES ── */
+.data-section-title{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.completed-challenge-group{margin-bottom:10px;}
+.completed-challenge-group:last-child{margin-bottom:0;}
+.completed-challenge-hdr{font-family:var(--fd);font-size:14px;font-weight:800;letter-spacing:0.5px;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.completed-run-badge{background:rgba(26,188,156,0.15);color:var(--teal);font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;}
+.completed-run-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.completed-run-row:last-child{border-bottom:none;}
+.completed-run-num{font-family:var(--fd);font-weight:700;color:var(--muted);width:44px;flex-shrink:0;}
+.completed-run-reps{font-family:var(--fd);font-weight:700;color:var(--teal);flex:1;}
+.completed-run-date{color:var(--muted);font-size:11px;flex-shrink:0;}
