@@ -59,6 +59,44 @@ function renderDataPage(){
       fill.className = 'storage-bar-fill' + (pct > 80 ? ' danger' : pct > 60 ? ' warn' : '');
     }
   } catch(e) {}
+
+  // Completed challenges history
+  renderCompletedChallenges();
+}
+
+function renderCompletedChallenges() {
+  const wrap = document.getElementById('completed-challenges-wrap');
+  if (!wrap) return;
+  const completed = (S.completedChallenges || []).slice().reverse();
+  if (completed.length === 0) { wrap.innerHTML = ''; return; }
+
+  // Group by exercise
+  const grouped = {};
+  completed.forEach(r => {
+    if (!grouped[r.exercise]) grouped[r.exercise] = [];
+    grouped[r.exercise].push(r);
+  });
+
+  const meta = { pushups:{label:'Push-ups',emoji:'💪'}, situps:{label:'Sit-ups',emoji:'🤸'}, squats:{label:'Squats',emoji:'🦵'} };
+
+  const html = Object.entries(grouped).map(([key, runs]) => {
+    const m = meta[key] || {label:key, emoji:'🏆'};
+    const rows = runs.map((r, i) => {
+      const date = r.completedAt ? new Date(r.completedAt).toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'}) : '—';
+      const runNum = runs.length - i;
+      return `<div class="completed-run-row">
+        <span class="completed-run-num">Run #${runNum}</span>
+        <span class="completed-run-reps">${r.totalReps} reps</span>
+        <span class="completed-run-date">${date}</span>
+      </div>`;
+    }).join('');
+    return `<div class="completed-challenge-group">
+      <div class="completed-challenge-hdr">${m.emoji} ${m.label} <span class="completed-run-badge">${runs.length} run${runs.length!==1?'s':''}</span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = `<div class="data-section-title">🏆 Completed Challenges</div><div class="data-card">${html}</div>`;
 }
 
 function exportData(){
