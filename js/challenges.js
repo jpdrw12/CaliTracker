@@ -46,6 +46,47 @@ function getDayTasksDone(c, dateStr) {
   return entries.length;
 }
 
+function checkChallengeComplete(c) {
+  if (c.completed) return false;
+  const total = getChallengeTotalDone(c);
+  if (total >= c.totalGoal) {
+    c.completed = true;
+    return true;
+  }
+  return false;
+}
+
+function restartChallenge(key) {
+  const c = S.challenges[key];
+  if (!c) return;
+  const meta = CHALLENGE_META[key];
+  // Archive the completed run
+  if (!S.completedChallenges) S.completedChallenges = [];
+  S.completedChallenges.push({
+    exercise:   key,
+    label:      meta.label,
+    totalGoal:  c.totalGoal,
+    weeklyGoal: c.weeklyGoal,
+    taskSize:   c.taskSize,
+    milestones: c.milestones.slice(),
+    totalReps:  getChallengeTotalDone(c),
+    startedAt:  c.createdAt || null,
+    completedAt: nowISO(),
+  });
+  // Reset for new run — keep settings
+  c.logs = {};
+  c.milestonesHit = [];
+  c.celebratePending = [];
+  c.completed = false;
+  c.weekStart = getWeekMonday(todayStr());
+  c.createdAt = nowISO();
+  save();
+  renderChallengeStrip();
+  renderWorkoutChallengeBanner();
+  renderChallengeSheet(key);
+  toast(`🔄 ${meta.label} challenge restarted! Run #${S.completedChallenges.filter(r=>r.exercise===key).length + 1}`, 'var(--teal)');
+}
+
 function checkWeekReset(c) {
   const monday = getWeekMonday(todayStr());
   if (c.weekStart !== monday) { c.weekStart = monday; }
@@ -95,6 +136,7 @@ function logChallengeReps(key, reps, bonus) {
   if (!c.logs[today]) c.logs[today] = [];
   c.logs[today].push({ id: Date.now(), reps, bonus: !!bonus });
   checkMilestones(c);
+  checkChallengeComplete(c);
   save();
   renderChallengeStrip();
   renderWorkoutChallengeBanner();
@@ -236,12 +278,20 @@ function renderChallengeSheet(key) {
     </div>`;
   }).join('');
 
-  // Celebration card
-  const celebrate = (c.celebratePending||[]).length > 0
-    ? `<div class="csheet-celebrate">
-        <div class="csheet-celebrate-title">🏆 Milestone Reached!</div>
-        <div class="csheet-celebrate-sub">${c.celebratePending[c.celebratePending.length-1]} ${meta.label} completed!</div>
-       </div>` : '';
+  // Completion card (goal reached) takes priority over milestone card
+  const completedRuns = (S.completedChallenges||[]).filter(r=>r.exercise===key).length;
+  const celebrate = c.completed
+    ? `<div class="csheet-complete">
+        <div class="csheet-complete-title">🏆 Challenge Complete!</div>
+        <div class="csheet-complete-sub">${total} ${meta.label} done · Run #${completedRuns + 1}</div>
+        <button class="csheet-restart-btn" id="csheet-restart-btn">🔄 Restart Challenge</button>
+       </div>`
+    : (c.celebratePending||[]).length > 0
+      ? `<div class="csheet-celebrate">
+          <div class="csheet-celebrate-title">🏆 Milestone Reached!</div>
+          <div class="csheet-celebrate-sub">${c.celebratePending[c.celebratePending.length-1]} ${meta.label} completed!</div>
+         </div>`
+      : '';
 
   const el = document.getElementById('csheet-content');
   el.innerHTML = `
@@ -305,6 +355,10 @@ function renderChallengeSheet(key) {
     c.celebratePending = [];
     save();
   }
+
+  // Restart button (only present when challenge is complete)
+  const restartBtn = el.querySelector('#csheet-restart-btn');
+  if (restartBtn) restartBtn.addEventListener('click', () => restartChallenge(key));
 
   // Edit / Delete button bindings
   el.querySelector('#csheet-edit-btn').addEventListener('click', () => {
