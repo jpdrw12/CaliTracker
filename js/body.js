@@ -1,8 +1,79 @@
+function switchBodyTab(tab) {
+  S.bodyTab = tab;
+  ['weight','measurements','prs','challenges'].forEach(t => {
+    const sec = document.getElementById('body-'+t+'-section');
+    const btn = document.getElementById('btab-'+t);
+    if (sec) sec.style.display = t === tab ? '' : 'none';
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  if (tab === 'measurements') { renderMeasGrid(); renderPhotoGallery(); }
+  if (tab === 'challenges') { renderBodyCompletedChallenges(); }
+}
+
 function renderBodyPage() {
   switchBodyTab(S.bodyTab||'weight');
   renderWeightChart();
   renderMeasGrid();
   renderPRList();
+  renderBodyCompletedChallenges();
+}
+
+function renderBodyCompletedChallenges() {
+  const wrap = document.getElementById('body-completed-challenges-wrap');
+  if (!wrap) return;
+  const completed = (S.completedChallenges || []).slice().reverse();
+  const CMETA = { pushups:{label:'Push-ups',emoji:'💪'}, situps:{label:'Sit-ups',emoji:'🤸'}, squats:{label:'Squats',emoji:'🦵'} };
+
+  // Active challenges summary at top
+  const active = Object.entries(S.challenges||{}).filter(([,c])=>c);
+  let activeHTML = '';
+  if (active.length) {
+    activeHTML = active.map(([key,c]) => {
+      const m = CMETA[key];
+      const total = getChallengeTotalDone(c);
+      const pct = Math.min(100, Math.round((total/c.totalGoal)*100));
+      return `<div class="completed-run-row" style="cursor:pointer" onclick="openChallengeSheet('${key}')">
+        <span style="font-size:16px">${m.emoji}</span>
+        <span class="completed-run-reps" style="flex:1">${m.label}</span>
+        <span class="completed-run-num">${total}/${c.totalGoal}</span>
+        <span style="color:var(--muted);font-size:11px">${pct}%</span>
+      </div>`;
+    }).join('');
+    activeHTML = `<div class="data-section-title" style="margin-top:0">ACTIVE</div><div class="data-card" style="margin-bottom:14px">${activeHTML}</div>`;
+  }
+
+  if (completed.length === 0 && !activeHTML) {
+    wrap.innerHTML = '<div class="today-empty" style="padding:32px 0;text-align:center;color:var(--muted);font-size:13px">No challenges yet.<br>Start one from the Today tab.</div>';
+    return;
+  }
+
+  let histHTML = '';
+  if (completed.length > 0) {
+    const grouped = {};
+    completed.forEach(r => {
+      if (!grouped[r.exercise]) grouped[r.exercise] = [];
+      grouped[r.exercise].push(r);
+    });
+    const groupsHTML = Object.entries(grouped).map(([key, runs]) => {
+      const m = CMETA[key] || {label:key, emoji:'🏆'};
+      const rows = runs.map((r, i) => {
+        const date = r.completedAt ? new Date(r.completedAt).toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'}) : '—';
+        const runNum = runs.length - i;
+        return `<div class="completed-run-row">
+          <span class="completed-run-num">Run #${runNum}</span>
+          <span class="completed-run-reps">${r.totalReps} reps</span>
+          <span class="completed-run-date">${date}</span>
+        </div>`;
+      }).join('');
+      return `<div class="completed-challenge-group">
+        <div class="completed-challenge-hdr">${m.emoji} ${m.label} <span class="completed-run-badge">${runs.length} run${runs.length!==1?'s':''}</span></div>
+        ${rows}
+      </div>`;
+    }).join('');
+    histHTML = `<div class="data-section-title">COMPLETED</div><div class="data-card">${groupsHTML}</div>`;
+  }
+
+  wrap.innerHTML = activeHTML + histHTML;
 }
 
 // ── WEIGHT LOG ──
