@@ -6,7 +6,8 @@
   --fd:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);}
+html{height:100%;}
+body{min-height:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);display:flex;flex-direction:column;}
 body{overflow-x:hidden;}
 
 /* TAB BAR */
@@ -19,7 +20,7 @@ body{overflow-x:hidden;}
 .tab-btn .tb.show{display:block;}
 
 /* PAGES */
-.page{display:none;padding-bottom:calc(var(--sab) + 65px);}
+.page{display:none;min-height:100vh;padding-bottom:calc(var(--sab) + 65px);box-sizing:border-box;}
 .page.active{display:block;}
 
 /* PAGE HEADER */
