@@ -1,5 +1,5 @@
-.body-section-tabs{display:flex;justify-content:center;gap:6px;padding:10px 16px 6px;overflow:hidden;flex-wrap:nowrap;}
-.body-tab-btn{flex:1;max-width:100px;padding:6px 8px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.2s;text-align:center;white-space:nowrap;}
+.body-section-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:10px 12px 6px;}
+.body-tab-btn{padding:6px 4px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--fd);font-size:10px;font-weight:700;letter-spacing:0.3px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.2s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .body-tab-btn.active{background:#1abc9c22;border-color:var(--teal);color:var(--teal);}
 .body-chart-wrap{padding:0 16px 10px;}
 .body-chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
