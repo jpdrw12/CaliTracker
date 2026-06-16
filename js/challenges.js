@@ -2,7 +2,7 @@
 
 const CHALLENGE_META = {
   pushups: { label:'Push-ups', emoji:'💪', color:'var(--teal)' },
-  situps:  { label:'Sit-ups',  emoji:'🤸', color:'var(--yellow)' },
+  situps:  { label:'Sit-ups',  emoji:'🙇', color:'var(--yellow)' },
   squats:  { label:'Squats',   emoji:'🦵', color:'var(--purple)' },
 };
 

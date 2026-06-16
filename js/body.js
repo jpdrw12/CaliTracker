@@ -22,7 +22,7 @@ function renderBodyCompletedChallenges() {
   const wrap = document.getElementById('body-completed-challenges-wrap');
   if (!wrap) return;
   const completed = (S.completedChallenges || []).slice().reverse();
-  const CMETA = { pushups:{label:'Push-ups',emoji:'💪'}, situps:{label:'Sit-ups',emoji:'🤸'}, squats:{label:'Squats',emoji:'🦵'} };
+  const CMETA = { pushups:{label:'Push-ups',emoji:'💪'}, situps:{label:'Sit-ups',emoji:'🙇'}, squats:{label:'Squats',emoji:'🦵'} };
 
   // Active challenges summary at top
   const active = Object.entries(S.challenges||{}).filter(([,c])=>c);

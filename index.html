@@ -54,6 +54,7 @@
     <div class="ob-tab"><div class="ob-tab-icon">🥗</div><div><div class="ob-tab-title">MEALS</div><div class="ob-tab-sub">Two weekly meal plans with shopping list export and custom meal editing</div></div></div>
     <div class="ob-tab"><div class="ob-tab-icon">📅</div><div><div class="ob-tab-title">SCHEDULE</div><div class="ob-tab-sub">Calendar view with daily, weekly, monthly and one-off tasks</div></div></div>
     <div class="ob-tab"><div class="ob-tab-icon">📝</div><div><div class="ob-tab-title">NOTES</div><div class="ob-tab-sub">Rich text notes with tags, pins and full-text search</div></div></div>
+    <div class="ob-tab"><div class="ob-tab-icon">📊</div><div><div class="ob-tab-title">NOTES</div><div class="ob-tab-sub">Measurement tracking, progress photos, weight tracking, personal records and completed challenges</div></div></div>
     <div class="ob-tab"><div class="ob-tab-icon">💾</div><div><div class="ob-tab-title">DATA</div><div class="ob-tab-sub">Progress charts, backup and restore — your data never leaves your device</div></div></div>
   </div>
   <button class="ob-start-btn" onclick="closeOnboarding()">GET STARTED</button>
@@ -84,20 +85,6 @@
   <button class="rest-timer-skip" onclick="skipRestTimer()">Skip ›</button>
 </div>
 
-<!-- ONBOARDING -->
-<div id="onboarding">
-  <div class="ob-logo">CALITRACK</div>
-  <div class="ob-tagline">Your personal fitness suite</div>
-  <div class="ob-steps">
-    <div class="ob-step"><span class="ob-step-icon">💪</span><div><div class="ob-step-title">WORKOUT</div><div class="ob-step-sub">7-day H/M/L rotation. Log sets, track progress, learn every exercise.</div></div></div>
-    <div class="ob-step"><span class="ob-step-icon">🥗</span><div><div class="ob-step-title">MEALS</div><div class="ob-step-sub">Two full weekly meal plans. Mark meals eaten, build a shopping list.</div></div></div>
-    <div class="ob-step"><span class="ob-step-icon">📅</span><div><div class="ob-step-title">SCHEDULE</div><div class="ob-step-sub">Daily, weekly and monthly tasks. Calendar view with task counts.</div></div></div>
-    <div class="ob-step"><span class="ob-step-icon">📝</span><div><div class="ob-step-title">NOTES</div><div class="ob-step-sub">Rich text notes with tags, pins and full-text search.</div></div></div>
-    <div class="ob-step"><span class="ob-step-icon">💾</span><div><div class="ob-step-title">DATA</div><div class="ob-step-sub">All data lives on your device. Export anytime to keep it safe.</div></div></div>
-  </div>
-  <button class="ob-start-btn" onclick="finishOnboarding()">GET STARTED →</button>
-</div>
-
 <!-- TAB BAR -->
 <div id="tab-bar">
   <button class="tab-btn active" id="tab-today" onclick="switchTab('today')">
@@ -114,7 +101,7 @@
     <span class="tb" id="sched-badge"></span>
   </button>
   <button class="tab-btn" id="tab-body" onclick="switchTab('body')">
-    <span class="ti">📊</span><span class="tl">Body</span>
+    <span class="ti">📊</span><span class="tl">Body & Stats</span>
   </button>
   <button class="tab-btn" id="tab-notes" onclick="switchTab('notes')">
     <span class="ti">📝</span><span class="tl">Notes</span>
@@ -306,7 +293,7 @@
 <div class="page" id="page-body">
   <div class="ph">
     <div class="ph-row">
-      <div><div class="ph-lbl">Tracking</div><div class="ph-title">BODY</div></div>
+      <div><div class="ph-lbl">Tracking</div><div class="ph-title">BODY & STATS</div></div>
     </div>
   </div>
   <!-- Section tabs -->
@@ -641,7 +628,7 @@
     <div class="cmodal-label">Exercise</div>
     <div class="cmodal-ex-grid" id="cmodal-ex-grid">
       <div class="cmodal-ex-btn" data-key="pushups" onclick="selectChallengeEx('pushups')"><div class="cmodal-ex-emoji">💪</div><div class="cmodal-ex-name">Push-ups</div></div>
-      <div class="cmodal-ex-btn" data-key="situps"  onclick="selectChallengeEx('situps')"><div class="cmodal-ex-emoji">🤸</div><div class="cmodal-ex-name">Sit-ups</div></div>
+      <div class="cmodal-ex-btn" data-key="situps"  onclick="selectChallengeEx('situps')"><div class="cmodal-ex-emoji">🙇</div><div class="cmodal-ex-name">Sit-ups</div></div>
       <div class="cmodal-ex-btn" data-key="squats"  onclick="selectChallengeEx('squats')"><div class="cmodal-ex-emoji">🦵</div><div class="cmodal-ex-name">Squats</div></div>
     </div>
     <div class="cmodal-label">Total Goal (reps)</div>
