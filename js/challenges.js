@@ -85,6 +85,7 @@ function restartChallenge(key) {
   renderChallengeStrip();
   renderWorkoutChallengeBanner();
   renderChallengeSheet(key);
+  try{renderBodyCompletedChallenges();}catch(e){}
   toast(`🔄 ${meta.label} challenge restarted! Starting run #${runNumber + 1}`, 'var(--teal)');
 }
 
