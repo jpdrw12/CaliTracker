@@ -314,6 +314,7 @@
     <button class="body-tab-btn active" id="btab-weight" onclick="switchBodyTab('weight')">⚖️ Weight</button>
     <button class="body-tab-btn" id="btab-measurements" onclick="switchBodyTab('measurements')">📏 Measurements</button>
     <button class="body-tab-btn" id="btab-prs" onclick="switchBodyTab('prs')">🏆 PRs</button>
+    <button class="body-tab-btn" id="btab-challenges" onclick="switchBodyTab('challenges')">🔥 Challenges</button>
   </div>
   <!-- Weight section -->
   <div id="body-weight-section">
@@ -378,6 +379,10 @@
       <input type="file" id="photo-file-inp" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoCapture(this)"/>
     </div>
     <div class="photo-gallery" id="photo-gallery"></div>
+  </div>
+  <!-- Challenges section -->
+  <div id="body-challenges-section" style="display:none">
+    <div id="body-completed-challenges-wrap" style="padding:0 16px 16px;"></div>
   </div>
   <!-- PRs section -->
   <div id="body-prs-section" style="display:none">
