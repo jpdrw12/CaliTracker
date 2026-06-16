@@ -28,22 +28,27 @@ function renderBodyCompletedChallenges() {
   const active = Object.entries(S.challenges||{}).filter(([,c])=>c);
   let activeHTML = '';
   if (active.length) {
-    activeHTML = active.map(([key,c]) => {
+    const rows = active.map(([key,c]) => {
       const m = CMETA[key];
       const total = getChallengeTotalDone(c);
       const pct = Math.min(100, Math.round((total/c.totalGoal)*100));
+      const isComplete = c.completed || total >= c.totalGoal;
       return `<div class="completed-run-row" style="cursor:pointer" onclick="openChallengeSheet('${key}')">
         <span style="font-size:16px">${m.emoji}</span>
-        <span class="completed-run-reps" style="flex:1">${m.label}</span>
+        <span class="completed-run-reps" style="flex:1">${m.label}${isComplete ? ' <span style=\"color:gold;font-size:10px\">✓ COMPLETE</span>' : ''}</span>
         <span class="completed-run-num">${total}/${c.totalGoal}</span>
         <span style="color:var(--muted);font-size:11px">${pct}%</span>
       </div>`;
     }).join('');
-    activeHTML = `<div class="data-section-title" style="margin-top:0">ACTIVE</div><div class="data-card" style="margin-bottom:14px">${activeHTML}</div>`;
+    activeHTML = `<div class="data-section-title" style="margin-top:0">ACTIVE</div><div class="data-card" style="margin-bottom:14px">${rows}</div>`;
   }
 
   if (completed.length === 0 && !activeHTML) {
     wrap.innerHTML = '<div class="today-empty" style="padding:32px 0;text-align:center;color:var(--muted);font-size:13px">No challenges yet.<br>Start one from the Today tab.</div>';
+    return;
+  }
+  if (completed.length === 0 && activeHTML) {
+    wrap.innerHTML = activeHTML;
     return;
   }
 
