@@ -20,7 +20,7 @@ document.addEventListener('click', function unlockAudio() {
   updateSchedBadge();
   checkOnboarding();
   updateAutoBackupUI();
-  Object.values(S.challenges||{}).forEach(c=>{ if(c) checkWeekReset(c); });
+  Object.values(S.challenges||{}).forEach(c=>{ if(c){ checkWeekReset(c); checkChallengeComplete(c); } });
 
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
