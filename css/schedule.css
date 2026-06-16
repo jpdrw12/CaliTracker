@@ -1,3 +1,4 @@
+#page-schedule{padding-bottom:calc(var(--sab) + 65px);}
 .cal-grid{padding:0 16px 12px;}
 .cal-month-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 0 10px;}
 .cal-month-title{font-family:var(--fd);font-size:18px;font-weight:800;letter-spacing:1px;}
