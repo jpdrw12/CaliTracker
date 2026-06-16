@@ -1,0 +1,22 @@
+.meal-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:7px;transition:border-color 0.3s;-webkit-tap-highlight-color:transparent;}
+.meal-card.eaten{border-color:var(--teal);}
+.meal-top{display:flex;align-items:flex-start;gap:11px;}
+.meal-chk{width:26px;height:26px;border-radius:50%;border:2px solid #555;background:transparent;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.meal-card.eaten .meal-chk{background:var(--teal);border-color:var(--teal);}
+.meal-card.eaten .meal-chk::after{content:'✓';color:#07070f;font-size:13px;font-weight:700;}
+.meal-info{flex:1;}
+.meal-name{font-weight:600;font-size:14px;font-family:var(--fd);letter-spacing:0.5px;}
+.meal-desc{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5;}
+.meal-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.mtag{font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;border-radius:6px;padding:2px 6px;background:var(--surface2);color:var(--faint);}
+.mtag.protein{background:#1a2d1a;color:#4ec94e;}
+.mtag.carb{background:#2d2410;color:#f39c12;}
+.mtag.cheap{background:#0f1a2d;color:#3a9edc;}
+.mtag.quick{background:#2d1a2d;color:#b06ee0;}
+.meal-edit-btn{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;padding:0 0 0 7px;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+
+/* SHOPPING */
+#shop-btn{position:fixed;bottom:calc(var(--sab) + 65px);left:16px;background:var(--teal);border:none;color:#07070f;border-radius:12px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fd);letter-spacing:1px;-webkit-tap-highlight-color:transparent;z-index:150;display:none;}
+#shop-btn.visible{display:block;}
+
+/* MODALS */
