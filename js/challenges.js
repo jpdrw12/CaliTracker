@@ -62,6 +62,7 @@ function restartChallenge(key) {
   const meta = CHALLENGE_META[key];
   // Archive the completed run
   if (!S.completedChallenges) S.completedChallenges = [];
+  const runNumber = S.completedChallenges.filter(r=>r.exercise===key).length + 1;
   S.completedChallenges.push({
     exercise:   key,
     label:      meta.label,
@@ -84,7 +85,7 @@ function restartChallenge(key) {
   renderChallengeStrip();
   renderWorkoutChallengeBanner();
   renderChallengeSheet(key);
-  toast(`🔄 ${meta.label} challenge restarted! Run #${S.completedChallenges.filter(r=>r.exercise===key).length + 1}`, 'var(--teal)');
+  toast(`🔄 ${meta.label} challenge restarted! Starting run #${runNumber + 1}`, 'var(--teal)');
 }
 
 function checkWeekReset(c) {
