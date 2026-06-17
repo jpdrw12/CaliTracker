@@ -101,7 +101,7 @@
 #rest-timer{
   position:fixed;bottom:calc(var(--sab) + 75px);left:50%;
   transform:translateX(-50%) translateY(100px);
-  background:#0d0d1a;border:1px solid var(--surface2);
+  background:var(--surface);border:1px solid var(--surface2);
   border-radius:20px;padding:12px 20px;
   display:flex;align-items:center;gap:14px;
   z-index:300;transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
@@ -186,7 +186,7 @@
 .backup-status-title{font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:0.5px;color:var(--text);}
 .backup-status-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
 .backup-status-action{background:var(--teal);border:none;color:#07070f;border-radius:8px;padding:7px 13px;font-family:var(--fd);font-size:11px;font-weight:800;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;flex-shrink:0;}
-.backup-status-action.danger{background:#1a0f0f;border:1px solid #3d1515;color:var(--red);}
+.backup-status-action.danger{background:var(--chip-red-bg);border:1px solid var(--chip-red-text);color:var(--red);}
 .backup-hint{font-size:11px;color:var(--faint);padding:10px 17px 13px;line-height:1.6;border-top:1px solid var(--border);}
 .backup-hint a{color:var(--teal);text-decoration:none;}
 
