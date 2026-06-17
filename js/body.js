@@ -33,9 +33,10 @@ function renderBodyCompletedChallenges() {
       const total = getChallengeTotalDone(c);
       const pct = Math.min(100, Math.round((total/c.totalGoal)*100));
       const isComplete = c.completed || total >= c.totalGoal;
+      const cStreak = getChallengeStreak(c);
       return `<div class="completed-run-row" style="cursor:pointer" onclick="openChallengeSheet('${key}')">
         <span style="font-size:16px">${m.emoji}</span>
-        <span class="completed-run-reps" style="flex:1">${m.label}${isComplete ? ' <span style=\"color:gold;font-size:10px\">✓ COMPLETE</span>' : ''}</span>
+        <span class="completed-run-reps" style="flex:1">${m.label}${isComplete ? ' <span style=\"color:gold;font-size:10px\">✓ COMPLETE</span>' : ''}${cStreak > 1 ? ` <span style=\"color:#f39c12;font-size:10px\">🔥${cStreak}d</span>` : ''}</span>
         <span class="completed-run-num">${total}/${c.totalGoal}</span>
         <span style="color:var(--muted);font-size:11px">${pct}%</span>
       </div>`;
