@@ -17,14 +17,6 @@ document.addEventListener('click', function unlockAudio() {
   // ISO week auto-advance
   checkISOWeekAdvance();
 
-  // Week navigation arrows (restored — lost in refactor)
-  document.getElementById('wo-prev').addEventListener('click', () => {
-    if (S.woWeek > 0) { S.woWeek--; save(); renderWorkout(); }
-  });
-  document.getElementById('wo-next').addEventListener('click', () => {
-    S.woWeek++; save(); renderWorkout();
-  });
-
   switchTab('today');
   renderWorkout();
   renderMeals();
