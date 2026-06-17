@@ -48,7 +48,7 @@ function renderWorkout(){
   const d=WORKOUTS[S.woDay],p=woDayPct(S.woDay);
   const info=WORKOUT_INFO[d.type],isOpen=S.infoOpen===S.woDay;
   document.getElementById('wo-day-hdr').innerHTML=`
-    <div class="dhc" style="background:${d.bg};border-color:${d.color}44" id="dhc-card">
+    <div class="dhc" style="background:${d.bg}1a;border-color:${d.color}44" id="dhc-card">
       <div style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="dhe">${d.emoji}</div>
         <div style="flex:1"><div class="dht" style="color:${d.color}">Day ${d.day} — ${d.name}</div><div class="dhtitle">${d.label.toUpperCase()} DAY</div><div class="dhn">${d.note}</div></div>
