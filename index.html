@@ -612,6 +612,19 @@
   </div>
 </div>
 
+<!-- IMPORT PREVIEW MODAL -->
+<div class="import-preview-overlay" id="import-preview-overlay">
+  <div class="import-preview-sheet">
+    <div class="import-preview-title">📦 Import Preview</div>
+    <div class="import-preview-sub">This backup contains:</div>
+    <div id="import-preview-rows"></div>
+    <div class="import-preview-actions">
+      <button class="import-preview-cancel" onclick="cancelImportPreview()">Cancel</button>
+      <button class="import-preview-confirm" onclick="confirmImport()">Replace & Import</button>
+    </div>
+  </div>
+</div>
+
 <!-- CHALLENGE DETAIL SHEET -->
 <div class="csheet-overlay" id="csheet-overlay">
   <div class="csheet">
