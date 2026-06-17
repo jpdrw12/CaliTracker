@@ -3,7 +3,7 @@ TODAY PAGE
 #page-today{padding-bottom:calc(var(--sab) + 65px);}
 .today-ph{
   position:sticky;top:0;z-index:100;
-  background:linear-gradient(180deg,#0f0f1e 0%,#07070f 100%);
+  background:var(--bg);
   border-bottom:1px solid var(--surface2);
   padding:calc(var(--sat) + 14px) 20px 12px;
 }
