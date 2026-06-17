@@ -39,7 +39,7 @@ function renderWorkout(){
     const p=woDayPct(i),active=i===S.woDay,isToday=i===todayIdx;
     const btn=document.createElement('button');
     btn.className='day-btn'+(active?' active':'')+(isToday?' today-day':'');
-    btn.style.cssText=`--dc:${d.color};--dbg:${d.bg}`;
+    btn.style.cssText=`--dc:${d.color};--dbg:${d.bg}1a`;
     btn.innerHTML=`<div class="de">${d.emoji}</div><div class="dn">${d.name}${isToday?'<span style="font-size:7px;color:var(--teal);display:block">TODAY</span>':''}</div><div class="dt">${d.label}</div>${p>0?`<div class="mb-track"><div class="mb-fill" style="width:${p}%;background:${d.color}"></div></div>`:'<div style="height:8px"></div>'}`;
     btn.onclick=()=>{S.woDay=i;save();renderWorkout();};
     sel.appendChild(btn);
