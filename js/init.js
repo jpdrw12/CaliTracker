@@ -17,6 +17,16 @@ document.addEventListener('click', function unlockAudio() {
   // ISO week auto-advance
   checkISOWeekAdvance();
 
+  // Safety re-bind for week nav (in case challenges.js top-level binding ever fails silently)
+  const woPrevBtn = document.getElementById('wo-prev');
+  const woNextBtn = document.getElementById('wo-next');
+  if (woPrevBtn && !woPrevBtn.onclick) {
+    woPrevBtn.addEventListener('click', () => { S.woWeek = Math.max(0, S.woWeek - 1); save(); renderWorkout(); });
+  }
+  if (woNextBtn && !woNextBtn.onclick) {
+    woNextBtn.addEventListener('click', () => { S.woWeek++; save(); renderWorkout(); });
+  }
+
   switchTab('today');
   renderWorkout();
   renderMeals();
