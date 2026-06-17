@@ -129,6 +129,25 @@ function unlogChallengeReps(key) {
   if (overlay && overlay.classList.contains('open')) renderChallengeSheet(key);
 }
 
+function getChallengeStreak(c) {
+  let streak = 0;
+  const d = new Date();
+  // Walk back from yesterday (today isn't over yet)
+  // but if today already has tasks done, count it too
+  const todayDone = getDayTasksDone(c, todayStr()) >= getDayTasksTotal(c);
+  if (todayDone) streak++;
+  for (let i = todayDone ? 1 : 0; i < 365; i++) {
+    const date = new Date(d);
+    date.setDate(d.getDate() - (todayDone ? i : i + 1));
+    const dateStr = date.toISOString().slice(0,10);
+    const done = getDayTasksDone(c, dateStr);
+    const total = getDayTasksTotal(c);
+    if (done >= total) streak++;
+    else break;
+  }
+  return streak;
+}
+
 function logChallengeReps(key, reps, bonus) {
   if (!reps || reps < 1) return;
   const c = S.challenges[key];
@@ -164,12 +183,13 @@ function renderChallengeStrip() {
     const pct = Math.min(100, Math.round((total / c.totalGoal) * 100));
     const tasksDone = getDayTasksDone(c, todayStr());
     const tasksTotal = getDayTasksTotal(c);
+    const streak = getChallengeStreak(c);
     const row = document.createElement('div');
     row.className = 'challenge-strip-row';
     row.innerHTML = `
       <div class="challenge-strip-icon">${meta.emoji}</div>
       <div class="challenge-strip-info">
-        <div class="challenge-strip-name">${meta.label} Challenge</div>
+        <div class="challenge-strip-name">${meta.label} Challenge${streak > 1 ? ` <span style="color:#f39c12;font-size:10px">🔥 ${streak}d</span>` : ''}</div>
         <div class="challenge-strip-sub">${total} / ${c.totalGoal} total · Today ${tasksDone}/${tasksTotal} tasks</div>
         <div class="challenge-strip-bar-track"><div class="challenge-strip-bar-fill" style="width:${pct}%;background:${meta.color}"></div></div>
       </div>
@@ -295,10 +315,14 @@ function renderChallengeSheet(key) {
          </div>`
       : '';
 
+  const streak = getChallengeStreak(c);
   const el = document.getElementById('csheet-content');
   el.innerHTML = `
     <div class="csheet-hdr">
-      <div class="csheet-title">${meta.emoji} ${meta.label}</div>
+      <div>
+        <div class="csheet-title">${meta.emoji} ${meta.label}</div>
+        ${streak > 0 ? `<div style="font-family:var(--fd);font-size:11px;color:#f39c12;font-weight:700;letter-spacing:0.5px;margin-top:2px">🔥 ${streak} day streak</div>` : ''}
+      </div>
       <div class="csheet-hdr-actions">
         <button class="csheet-hdr-btn" id="csheet-edit-btn">✏️ Edit</button>
         <button class="csheet-hdr-btn del" id="csheet-del-btn">🗑 Delete</button>
