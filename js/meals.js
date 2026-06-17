@@ -13,13 +13,13 @@ function renderMeals(){
     const pd=mlDayDone(i),pct=Math.round((pd/3)*100),active=i===S.mlDay;
     const btn=document.createElement('button');
     btn.className='day-btn'+(active?' active':'');
-    btn.style.cssText='--dc:#1abc9c;--dbg:#0d1a18';
+    btn.style.cssText='--dc:#1abc9c;--dbg:#1abc9c1a';
     btn.innerHTML=`<div class="de">${d.emoji}</div><div class="dn">${d.name}</div><div class="dt">${pd}/3</div>${pd>0?`<div class="mb-track"><div class="mb-fill" style="width:${pct}%;background:#1abc9c"></div></div>`:'<div style="height:8px"></div>'}`;
     btn.onclick=()=>{S.mlDay=i;save();renderMeals();};
     sel.appendChild(btn);
   });
   document.getElementById('meal-day-header').innerHTML=`
-    <div class="dhc" style="background:#0d1a18;border-color:#1abc9c44;cursor:default">
+    <div class="dhc" style="background:#1abc9c1a;border-color:#1abc9c44;cursor:default">
       <div style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="dhe">🥗</div>
         <div><div class="dht" style="color:#1abc9c">${meals[S.mlDay].name}</div><div class="dhtitle">MEAL PLAN</div><div class="dhn">Tap a meal to mark it eaten · ✏️ to edit</div></div>
