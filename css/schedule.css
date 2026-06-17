@@ -28,10 +28,10 @@
 .task-card.done-card .task-title{text-decoration:line-through;color:var(--muted);}
 .task-meta{display:flex;align-items:center;gap:6px;margin-top:4px;}
 .task-cat{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;font-family:var(--fd);letter-spacing:0.5px;text-transform:uppercase;}
-.cat-daily{background:#1a2d1a;color:#4ec94e;}
-.cat-weekly{background:#2d2410;color:#f39c12;}
-.cat-monthly{background:#1a1a2d;color:#7b9ef0;}
-.cat-once{background:#2d1214;color:#e74c3c;}
+.cat-daily{background:var(--chip-green-bg);color:var(--chip-green-text);}
+.cat-weekly{background:var(--chip-yellow-bg);color:var(--chip-yellow-text);}
+.cat-monthly{background:var(--chip-indigo-bg);color:var(--chip-indigo-text);}
+.cat-once{background:var(--chip-red-bg);color:var(--chip-red-text);}
 .task-date{font-size:10px;color:var(--muted);}
 .task-del-btn{background:none;border:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 2px;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
 .task-del-btn:active{color:var(--red);}
@@ -41,10 +41,10 @@
 /* ADD TASK MODAL */
 .cat-select-row{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
 .cat-select-btn{flex:1;min-width:60px;padding:8px 4px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:center;transition:all 0.2s;}
-.cat-select-btn.sel.daily{background:#1a2d1a;color:#4ec94e;border-color:#4ec94e44;}
-.cat-select-btn.sel.weekly{background:#2d2410;color:#f39c12;border-color:#f39c1244;}
-.cat-select-btn.sel.monthly{background:#1a1a2d;color:#7b9ef0;border-color:#7b9ef044;}
-.cat-select-btn.sel.once{background:#2d1214;color:#e74c3c;border-color:#e74c3c44;}
+.cat-select-btn.sel.daily{background:var(--chip-green-bg);color:var(--chip-green-text);border-color:var(--chip-green-text);}
+.cat-select-btn.sel.weekly{background:var(--chip-yellow-bg);color:var(--chip-yellow-text);border-color:var(--chip-yellow-text);}
+.cat-select-btn.sel.monthly{background:var(--chip-indigo-bg);color:var(--chip-indigo-text);border-color:var(--chip-indigo-text);}
+.cat-select-btn.sel.once{background:var(--chip-red-bg);color:var(--chip-red-text);border-color:var(--chip-red-text);}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);}
 .toggle-lbl{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--text);}
 .toggle-sub{font-size:11px;color:var(--muted);margin-top:2px;}
