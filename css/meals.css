@@ -9,10 +9,10 @@
 .meal-desc{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5;}
 .meal-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
 .mtag{font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;border-radius:6px;padding:2px 6px;background:var(--surface2);color:var(--faint);}
-.mtag.protein{background:#1a2d1a;color:#4ec94e;}
-.mtag.carb{background:#2d2410;color:#f39c12;}
-.mtag.cheap{background:#0f1a2d;color:#3a9edc;}
-.mtag.quick{background:#2d1a2d;color:#b06ee0;}
+.mtag.protein{background:var(--chip-green-bg);color:var(--chip-green-text);}
+.mtag.carb{background:var(--chip-yellow-bg);color:var(--chip-yellow-text);}
+.mtag.cheap{background:var(--chip-blue-bg,#0f1a2d);color:var(--chip-blue-text,#3a9edc);}
+.mtag.quick{background:var(--chip-purple-bg);color:var(--chip-purple-text);}
 .meal-edit-btn{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;padding:0 0 0 7px;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
 
 /* SHOPPING */
