@@ -1,3 +1,29 @@
+function getISOWeek(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 4 - (d.getDay()||7));
+  const yearStart = new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function checkISOWeekAdvance() {
+  const currentISO = getISOWeek(new Date());
+  if (S.woISOWeek === null) {
+    // First time — initialise to current ISO week, don't advance
+    S.woISOWeek = currentISO;
+    save();
+    return;
+  }
+  if (currentISO !== S.woISOWeek) {
+    // Week has turned — advance woWeek and update tracker
+    const diff = currentISO - S.woISOWeek;
+    S.woWeek = Math.max(0, S.woWeek + diff);
+    S.woISOWeek = currentISO;
+    save();
+    toast(`📅 Week ${S.woWeek + 1} — new workout week started!`, 'var(--teal)');
+  }
+}
+
 function todayStr(){const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;}
 function getCalDate(){
   if(!S.calMonth){const n=new Date();S.calMonth={y:n.getFullYear(),m:n.getMonth()};}
