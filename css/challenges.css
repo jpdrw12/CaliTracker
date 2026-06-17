@@ -100,7 +100,7 @@
 /* PHASE 8 — NOTES & POLISH */
 .meal-custom-badge{
   font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;
-  background:#0f1a2d;color:#3a9edc;font-family:var(--fd);letter-spacing:0.5px;
+  background:var(--chip-blue-bg,#0f1a2d);color:var(--chip-blue-text,#3a9edc);font-family:var(--fd);letter-spacing:0.5px;
   margin-left:5px;flex-shrink:0;
 }
 .task-search-wrap{padding:0 16px 8px;}
@@ -138,7 +138,7 @@
 /* ── REST TIMER ── */
 #rest-timer{
   position:fixed;bottom:calc(var(--sab) + 65px);left:50%;transform:translateX(-50%) translateY(200px);
-  background:#1a1a2e;border:1px solid var(--surface2);border-radius:20px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:20px;
   padding:10px 20px;display:flex;align-items:center;gap:12px;
   z-index:300;transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
   box-shadow:0 8px 32px rgba(0,0,0,0.5);
