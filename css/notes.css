@@ -1,5 +1,5 @@
 .note-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:border-color 0.2s;-webkit-tap-highlight-color:transparent;position:relative;}
-.note-card.pinned{border-color:#f39c1244;background:#1a160a;}
+.note-card.pinned{border-color:var(--chip-yellow-text);background:var(--chip-yellow-bg);}
 .note-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;}
 .note-card-title{font-family:var(--fd);font-size:15px;font-weight:800;letter-spacing:0.5px;flex:1;}
 .note-pin-icon{font-size:14px;flex-shrink:0;}
@@ -69,12 +69,12 @@
 
 /* MEAL ROTATION BADGE */
 .meal-rotation-badge{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:10px;font-family:var(--fd);font-weight:700;letter-spacing:1px;color:var(--muted);cursor:pointer;-webkit-tap-highlight-color:transparent;margin-left:8px;}
-.meal-rotation-badge.week-b{background:#1a1a2d;border-color:#7b9ef044;color:#7b9ef0;}
+.meal-rotation-badge.week-b{background:var(--chip-indigo-bg);border-color:var(--chip-indigo-text);color:var(--chip-indigo-text);}
 
 /* BACKUP PROMPT BANNER */
 #backup-prompt{
   display:none;position:fixed;top:calc(var(--sat) + 8px);left:12px;right:12px;z-index:400;
-  background:#2d2410;border:1px solid #f39c1244;border-radius:12px;
+  background:var(--chip-yellow-bg);border:1px solid var(--chip-yellow-text);border-radius:12px;
   padding:12px 14px;align-items:center;gap:10px;
 }
 #backup-prompt.show{display:flex;}
@@ -127,9 +127,21 @@
 :root.light{
   --bg:#f5f5f0;--surface:#ffffff;--surface2:#e8e8e0;--border:#ddd;
   --text:#1a1a1a;--muted:#888;--faint:#bbb;
+  --chip-blue-bg:#e3f0fb;--chip-blue-text:#1a6fa8;
+  --chip-green-bg:#e6f7e8;--chip-green-text:#1f8c33;
+  --chip-yellow-bg:#fdf2e0;--chip-yellow-text:#a8650f;
+  --chip-purple-bg:#f3e8fb;--chip-purple-text:#8038b0;
+  --chip-red-bg:#fce8e8;--chip-red-text:#c0392b;
+  --chip-indigo-bg:#e8ecfb;--chip-indigo-text:#3b5bc0;
+}
+:root:not(.light){
+  --chip-green-bg:#1a2d1a;--chip-green-text:#4ec94e;
+  --chip-yellow-bg:#2d2410;--chip-yellow-text:#f39c12;
+  --chip-purple-bg:#2d1a2d;--chip-purple-text:#b06ee0;
+  --chip-red-bg:#2d1214;--chip-red-text:#e74c3c;
+  --chip-indigo-bg:#1a1a2d;--chip-indigo-text:#7b9ef0;
 }
 :root.light #tab-bar{background:#fff;border-color:#e0e0d8;}
-:root.light .ph{background:linear-gradient(180deg,#f5f5f0 0%,#f5f5f0 100%);}
 :root.light .set-inp{background:#f0f0eb;}
 :root.light .note-rich-view{color:var(--text);}
 :root.light #note-editor-modal{background:var(--bg);}
