@@ -10,7 +10,7 @@ html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--text);font-family:var(--fb);position:fixed;inset:0;}
 
 /* TAB BAR */
-#tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;display:flex;background:#0a0a18;border-top:1px solid var(--surface2);padding-bottom:var(--sab);}
+#tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;display:flex;background:var(--surface);border-top:1px solid var(--surface2);padding-bottom:var(--sab);}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 6px;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.2s;position:relative;}
 .tab-btn .ti{font-size:20px;}
 .tab-btn .tl{font-size:8px;letter-spacing:0.5px;text-transform:uppercase;margin-top:2px;color:var(--muted);font-family:var(--fd);font-weight:700;}
