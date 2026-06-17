@@ -12,9 +12,9 @@
 /* SHOPPING MODAL */
 .shop-cat{margin-bottom:18px;}
 .shop-cat-title{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid #1abc9c22;}
-.shop-item{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #111;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.shop-item{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .shop-item:last-child{border-bottom:none;}
-.shop-chk{width:21px;height:21px;border-radius:6px;border:2px solid #444;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.shop-chk{width:21px;height:21px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
 .shop-item.checked .shop-chk{background:var(--teal);border-color:var(--teal);}
 .shop-item.checked .shop-chk::after{content:'✓';color:#07070f;font-size:12px;font-weight:800;}
 .shop-item-name{font-size:13px;flex:1;transition:color 0.2s;}
