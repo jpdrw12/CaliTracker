@@ -6,21 +6,26 @@ function getISOWeek(date) {
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
+let _isoWeekCheckedThisSession = false;
 function checkISOWeekAdvance() {
+  // Guard: only ever run the advance logic once per page load,
+  // no matter how many times this function is called.
+  if (_isoWeekCheckedThisSession) return;
+  _isoWeekCheckedThisSession = true;
+
   const currentISO = getISOWeek(new Date());
-  if (S.woISOWeek === null) {
-    // First time — initialise to current ISO week, don't advance
+  if (S.woISOWeek === null || S.woISOWeek === undefined) {
+    // First time ever — anchor to current ISO week, don't advance
     S.woISOWeek = currentISO;
     save();
     return;
   }
-  if (currentISO !== S.woISOWeek) {
-    // Week has turned — advance woWeek and update tracker
-    const diff = currentISO - S.woISOWeek;
-    S.woWeek = Math.max(0, S.woWeek + diff);
+  const elapsed = currentISO - S.woISOWeek;
+  if (elapsed !== 0) {
+    S.woWeek = Math.max(0, S.woWeek + elapsed);
     S.woISOWeek = currentISO;
     save();
-    toast(`📅 Week ${S.woWeek + 1} — new workout week started!`, 'var(--teal)');
+    if (elapsed > 0) toast(`📅 Week ${S.woWeek + 1} — new workout week started!`, 'var(--teal)');
   }
 }
 
