@@ -8,24 +8,24 @@ function getISOWeek(date) {
 
 let _isoWeekCheckedThisSession = false;
 function checkISOWeekAdvance() {
-  // Guard: only ever run the advance logic once per page load,
-  // no matter how many times this function is called.
   if (_isoWeekCheckedThisSession) return;
   _isoWeekCheckedThisSession = true;
 
   const currentISO = getISOWeek(new Date());
-  if (S.woISOWeek === null || S.woISOWeek === undefined) {
-    // First time ever — anchor to current ISO week, don't advance
+  const savedISO = S.woISOWeek;
+
+  if (savedISO === null || savedISO === undefined) {
     S.woISOWeek = currentISO;
     save();
     return;
   }
-  const elapsed = currentISO - S.woISOWeek;
+  const elapsed = currentISO - savedISO;
   if (elapsed !== 0) {
+    // DEBUG: surface exactly what's happening so we can diagnose on-device
+    toast(`DEBUG: saved=${savedISO} current=${currentISO} elapsed=${elapsed} woWeek ${S.woWeek}→${Math.max(0,S.woWeek+elapsed)}`, '#e74c3c');
     S.woWeek = Math.max(0, S.woWeek + elapsed);
     S.woISOWeek = currentISO;
     save();
-    if (elapsed > 0) toast(`📅 Week ${S.woWeek + 1} — new workout week started!`, 'var(--teal)');
   }
 }
 
