@@ -8,7 +8,7 @@ function renderWorkout(){
   const streak=calcStreak();
   document.getElementById('wo-prog').style.width=pct+'%';
   document.getElementById('wo-pct-lbl').textContent=pct+'%';
-  document.getElementById('wo-wk').textContent=S.woWeek+1;
+  document.getElementById('wo-wk').textContent=`W${S.woISOWeek||getISOWeek(new Date())} (${S.woWeek+1})`;
   const streakEl=document.getElementById('wo-streak');
   if(streakEl){streakEl.textContent=streak>0?`🔥 ${streak} day streak`:'';}
 
