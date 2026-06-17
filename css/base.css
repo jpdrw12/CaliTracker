@@ -6,9 +6,8 @@
   --fd:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
-html{height:100%;}
-body{min-height:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);display:flex;flex-direction:column;}
-body{overflow-x:hidden;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);position:fixed;inset:0;}
 
 /* TAB BAR */
 #tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;display:flex;background:#0a0a18;border-top:1px solid var(--surface2);padding-bottom:var(--sab);}
@@ -20,7 +19,7 @@ body{overflow-x:hidden;}
 .tab-btn .tb.show{display:block;}
 
 /* PAGES */
-.page{display:none;min-height:100vh;padding-bottom:calc(var(--sab) + 65px);box-sizing:border-box;}
+.page{display:none;position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--sab) + 65px);box-sizing:border-box;}
 .page.active{display:block;}
 
 /* PAGE HEADER */
