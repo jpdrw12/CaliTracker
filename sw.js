@@ -1,4 +1,4 @@
-const CACHE = 'calitrack-v2';
+const CACHE = 'calitrack-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -45,11 +45,11 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Network first, fall back to cache
+// Network first (bypassing HTTP cache), fall back to SW cache only if offline
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-store' })
       .then(res => {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
