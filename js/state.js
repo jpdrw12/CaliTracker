@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════
 // DATA VERSION & MIGRATION
 // ═══════════════════════════════════════════════════
-const DATA_VERSION = 6;
+const DATA_VERSION = 7;
 
 function migrate(s) {
   let v = s.version || 1;
@@ -10,6 +10,7 @@ function migrate(s) {
   if (v < 4) { s.streakData = {}; s.lastOpenedDate = null; s.lastBackupPrompt = null; s.mealRotation = 'A'; s.theme = 'dark'; s.onboardingDone = false; s.autoBackupFileName = null; s.lastAutoBackup = null; s.exCustom = {}; s.sessionNotes = {}; s.weightLog = []; s.measurements = {}; s.prs = []; s.bodyTab = 'weight'; v = 4; }
   if (v < 5) { s.challenges = {}; v = 5; }
   if (v < 6) { s.completedChallenges = []; v = 6; }
+  if (v < 7) { s.woISOWeek = null; v = 7; }
   // Data hygiene: prune taskDone entries older than 90 days
   if (s.taskDone) {
     const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
@@ -80,7 +81,7 @@ function loadState(){
   catch{return defaultState();}
 }
 function defaultState(){
-  return{version:DATA_VERSION,woWeek:0,woDay:0,mlWeek:0,mlDay:0,activeTab:'today',
+  return{version:DATA_VERSION,woWeek:0,woISOWeek:null,woDay:0,mlWeek:0,mlDay:0,activeTab:'today',
     infoOpen:null,exInfoOpen:null,logs:{},mealLogs:{},shopChecks:{},mealCustom:{},
     tasks:[],notes:[],calMonth:null,calSelDate:null,noteFilter:null,
     streakData:{},lastOpenedDate:null,lastBackupPrompt:null,taskDone:{},
