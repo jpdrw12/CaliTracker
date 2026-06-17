@@ -60,11 +60,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);position:fixed
 .dpct-l{font-size:9px;color:var(--faint);}
 .dhc-toggle{font-size:14px;color:var(--muted);flex-shrink:0;transition:transform 0.3s;}
 .dhc-toggle.open{transform:rotate(180deg);color:var(--dc);}
-.dhc-info{display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);}
+.dhc-info{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
 .dhc-info.open{display:block;}
 .dhc-info-title{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
-.dhc-info-body{font-size:12px;color:#aaa;line-height:1.7;}
-.dhc-tip{display:flex;align-items:flex-start;gap:8px;margin-top:7px;font-size:12px;color:#aaa;}
+.dhc-info-body{font-size:12px;color:var(--muted);line-height:1.7;}
+.dhc-tip{display:flex;align-items:flex-start;gap:8px;margin-top:7px;font-size:12px;color:var(--muted);}
 .dhc-tip-icon{flex-shrink:0;font-size:13px;}
 
 /* EXERCISE CARDS */
