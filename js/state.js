@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════
 // DATA VERSION & MIGRATION
 // ═══════════════════════════════════════════════════
-const DATA_VERSION = 7;
+const DATA_VERSION = 8;
 
 function migrate(s) {
   let v = s.version || 1;
@@ -11,6 +11,7 @@ function migrate(s) {
   if (v < 5) { s.challenges = {}; v = 5; }
   if (v < 6) { s.completedChallenges = []; v = 6; }
   if (v < 7) { s.woISOWeek = null; v = 7; }
+  if (v < 8) { s.customWorkout = {}; v = 8; }
   // Data hygiene: prune taskDone entries older than 90 days
   if (s.taskDone) {
     const cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
@@ -88,7 +89,7 @@ function defaultState(){
     mealRotation:'A',theme:'dark',onboardingDone:false,
     autoBackupFileName:null,lastAutoBackup:null,
     exCustom:{},sessionNotes:{},
-    weightLog:[],measurements:{},prs:[],bodyTab:'weight',progressPhotos:[],challenges:{},completedChallenges:[]};
+    weightLog:[],measurements:{},prs:[],bodyTab:'weight',progressPhotos:[],challenges:{},completedChallenges:[],customWorkout:{}};
 }
 let S=loadState();
 function save(){
