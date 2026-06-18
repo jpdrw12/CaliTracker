@@ -45,7 +45,7 @@ function renderWorkout(){
     sel.appendChild(btn);
   });
 
-  const d=WORKOUTS[S.woDay],p=woDayPct(S.woDay);
+  const d=getWorkoutDay(S.woDay),p=woDayPct(S.woDay);
   const info=WORKOUT_INFO[d.type],isOpen=S.infoOpen===S.woDay;
   document.getElementById('wo-day-hdr').innerHTML=`
     <div class="dhc" style="background:${d.bg}1a;border-color:${d.color}44" id="dhc-card">
@@ -66,7 +66,7 @@ function renderWorkout(){
   });
 
   const el=document.getElementById('exercises');el.innerHTML='';
-  WORKOUTS[S.woDay].exercises.forEach(ex=>{
+  getWorkoutDay(S.woDay).exercises.forEach(ex=>{
     const exData=getExData(S.woDay,ex);
     const done=Array.from({length:exData.sets},(_,i)=>S.logs[wKey(S.woWeek,S.woDay,ex.id,i+1)]?.done?1:0).reduce((a,b)=>a+b,0);
     const all=done===exData.sets,infoKey=S.woDay+'-'+ex.id,isOpen=S.exInfoOpen===infoKey;
@@ -125,7 +125,7 @@ function renderWorkout(){
       save();renderWorkout();checkDayCompletion();
       if(navigator.vibrate)navigator.vibrate(8);
       if(wasUnchecked&&S.logs[k].done){
-        const restSecs=REST_TIMES[WORKOUTS[S.woDay].type]||90;
+        const restSecs=REST_TIMES[getWorkoutDay(S.woDay).type]||90;
         if(restSecs>0)startRestTimer(restSecs);
       }
     }));
@@ -147,14 +147,14 @@ function renderWorkout(){
         if(side){
           S.logs[k]['reps'+side]=fmtElapsed(elapsed);
           S.logs[k]['done'+side]=true;
-          if(S.logs[k].doneL&&S.logs[k].doneR){S.logs[k].done=true;save();renderWorkout();checkDayCompletion();if(navigator.vibrate)navigator.vibrate(8);const restSecs=REST_TIMES[WORKOUTS[S.woDay].type]||90;if(restSecs>0)startRestTimer(restSecs);}
+          if(S.logs[k].doneL&&S.logs[k].doneR){S.logs[k].done=true;save();renderWorkout();checkDayCompletion();if(navigator.vibrate)navigator.vibrate(8);const restSecs=REST_TIMES[getWorkoutDay(S.woDay).type]||90;if(restSecs>0)startRestTimer(restSecs);}
           else{save();const tv=document.getElementById('tv'+side+'-'+k);if(tv)tv.textContent=fmtElapsed(elapsed);btn.classList.remove('running');btn.classList.add('done-timer');btn.disabled=true;}
         } else {
           S.logs[k].reps=fmtElapsed(elapsed);
           S.logs[k].done=true;
           save();renderWorkout();checkDayCompletion();
           if(navigator.vibrate)navigator.vibrate(8);
-          const restSecs=REST_TIMES[WORKOUTS[S.woDay].type]||90;
+          const restSecs=REST_TIMES[getWorkoutDay(S.woDay).type]||90;
           if(restSecs>0)startRestTimer(restSecs);
         }
       } else {
@@ -302,6 +302,117 @@ function checkForPR(exName, repsStr) {
     }
     try { renderPRList(); } catch(e) {}
   }
+}
+
+// ═══════════════════════════════════════════════════
+// DAY EDIT (Phase 19)
+// ═══════════════════════════════════════════════════
+let _dayEditDay = null;
+let _dayEditExercises = [];
+let _dayEditType = 'heavy';
+
+function openDayEdit() {
+  const dayIdx = S.woDay;
+  _dayEditDay = dayIdx;
+  const d = getWorkoutDay(dayIdx);
+  _dayEditExercises = d.exercises.map(ex => ({ ...ex }));
+  _dayEditType = d.type;
+
+  document.getElementById('day-edit-title').textContent = `EDIT ${d.name.toUpperCase()}`;
+  document.getElementById('day-edit-label').value = d.label || '';
+  renderDayTypeButtons();
+  renderDayEditExList();
+  document.getElementById('day-edit-modal').classList.add('open');
+}
+
+function closeDayEdit() {
+  document.getElementById('day-edit-modal').classList.remove('open');
+}
+
+function renderDayTypeButtons() {
+  const types = [
+    { id:'heavy', label:'Heavy', color:'#e74c3c' },
+    { id:'medium', label:'Medium', color:'#f39c12' },
+    { id:'light', label:'Light', color:'#27ae60' },
+    { id:'recovery', label:'Recovery', color:'#8e44ad' },
+  ];
+  document.getElementById('day-type-btns').innerHTML = types.map(t =>
+    `<button class="day-type-btn${_dayEditType===t.id?' active':''}"
+      onclick="_dayEditType='${t.id}';renderDayTypeButtons()"
+      style="${_dayEditType===t.id?`border-color:${t.color};color:${t.color};background:${t.color}1a`:''}"
+    >${t.label}</button>`
+  ).join('');
+}
+
+function renderDayEditExList() {
+  const el = document.getElementById('day-edit-ex-list');
+  const countEl = document.getElementById('day-edit-ex-count');
+  if (countEl) countEl.textContent = `(${_dayEditExercises.length})`;
+  if (_dayEditExercises.length === 0) {
+    el.innerHTML = '<div style="padding:12px 0;color:var(--muted);font-size:13px;font-style:italic">No exercises — add one below</div>';
+    return;
+  }
+  el.innerHTML = _dayEditExercises.map((ex, i) => `
+    <div class="day-edit-ex-row">
+      <span class="day-edit-ex-name">${ex.name}</span>
+      ${i > 0 ? `<button class="day-edit-ex-move" onclick="moveDayEditEx(${i},-1)">↑</button>` : '<span style="width:24px"></span>'}
+      ${i < _dayEditExercises.length-1 ? `<button class="day-edit-ex-move" onclick="moveDayEditEx(${i},1)">↓</button>` : '<span style="width:24px"></span>'}
+      <button class="day-edit-ex-remove" onclick="removeDayEditEx(${i})">✕</button>
+    </div>`).join('');
+}
+
+function moveDayEditEx(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= _dayEditExercises.length) return;
+  [_dayEditExercises[i], _dayEditExercises[j]] = [_dayEditExercises[j], _dayEditExercises[i]];
+  renderDayEditExList();
+}
+
+function removeDayEditEx(i) {
+  _dayEditExercises.splice(i, 1);
+  renderDayEditExList();
+}
+
+function addDayEditExercise() {
+  const inp = document.getElementById('day-edit-new-ex');
+  const name = inp.value.trim();
+  if (!name) return;
+  // Generate a unique id for new exercises
+  const id = 'cx' + Date.now().toString(36);
+  _dayEditExercises.push({ id, name, sets: 3, target: '8–12' });
+  inp.value = '';
+  renderDayEditExList();
+}
+
+function saveDayEdit() {
+  if (!_dayEditExercises.length) { toast('Add at least one exercise', '#e74c3c'); return; }
+  const label = document.getElementById('day-edit-label').value.trim();
+  const orig = WORKOUTS[_dayEditDay];
+  const typeColors = { heavy:'#e74c3c', medium:'#f39c12', light:'#27ae60', recovery:'#8e44ad' };
+  const color = typeColors[_dayEditType] || orig.color;
+
+  if (!S.customWorkout) S.customWorkout = {};
+  S.customWorkout[_dayEditDay] = {
+    label: label || orig.label,
+    type: _dayEditType,
+    color,
+    bg: color,
+    note: orig.note,
+    exercises: _dayEditExercises,
+  };
+  save();
+  closeDayEdit();
+  renderWorkout();
+  toast(`✅ ${WORKOUTS[_dayEditDay].name} updated`, 'var(--teal)');
+}
+
+function resetDayEdit() {
+  if (!confirm(`Reset ${WORKOUTS[_dayEditDay].name} to default?`)) return;
+  if (S.customWorkout) delete S.customWorkout[_dayEditDay];
+  save();
+  closeDayEdit();
+  renderWorkout();
+  toast(`↩️ ${WORKOUTS[_dayEditDay].name} reset to default`);
 }
 
 // ═══════════════════════════════════════════════════
