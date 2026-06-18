@@ -169,7 +169,98 @@ function renderWorkout(){
   });
 
   loadSessionNote();
+  renderWorkoutHistory();
   if(pageEl&&scrollY)requestAnimationFrame(()=>{pageEl.scrollTop=scrollY;});
+}
+
+// ═══════════════════════════════════════════════════
+// WORKOUT HISTORY LOG
+// ═══════════════════════════════════════════════════
+function getSessionPct(week, dayIdx) {
+  const d = WORKOUTS[dayIdx];
+  let totalSets = 0, doneSets = 0;
+  d.exercises.forEach(ex => {
+    for (let s = 1; s <= ex.sets; s++) {
+      totalSets++;
+      if (S.logs[wKey(week, dayIdx, ex.id, s)]?.done) doneSets++;
+    }
+  });
+  return totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
+}
+
+function buildWorkoutHistory() {
+  // Find every week+day combo that has at least one logged set
+  const sessions = {};
+  Object.keys(S.logs).forEach(k => {
+    const m = k.match(/^w(\d+)-d(\d+)-/);
+    if (!m) return;
+    const week = parseInt(m[1]), day = parseInt(m[2]);
+    const key = `${week}-${day}`;
+    if (!sessions[key] && S.logs[k]?.done) sessions[key] = { week, day };
+    else if (!sessions[key]) sessions[key] = { week, day, hasAny: true };
+  });
+  // Filter to sessions with at least one done set
+  const list = Object.values(sessions).filter(s => {
+    const d = WORKOUTS[s.day];
+    return d.exercises.some(ex => {
+      for (let i = 1; i <= ex.sets; i++) {
+        if (S.logs[wKey(s.week, s.day, ex.id, i)]?.done) return true;
+      }
+      return false;
+    });
+  });
+  // Sort newest first (higher week number = more recent, then later day index)
+  list.sort((a,b) => b.week - a.week || b.day - a.day);
+  return list;
+}
+
+let _woHistoryToggleBound = false;
+function initWorkoutHistoryToggle() {
+  if (_woHistoryToggleBound) return;
+  const toggle = document.getElementById('wo-history-toggle');
+  const body   = document.getElementById('wo-history-body');
+  const arrow  = document.getElementById('wo-history-arrow');
+  if (!toggle || !body || !arrow) return;
+  toggle.addEventListener('click', () => {
+    const open = body.classList.toggle('open');
+    arrow.classList.toggle('open', open);
+  });
+  _woHistoryToggleBound = true;
+}
+
+function renderWorkoutHistory() {
+  initWorkoutHistoryToggle();
+  const listEl = document.getElementById('wo-history-list');
+  if (!listEl) return;
+  const sessions = buildWorkoutHistory();
+
+  if (sessions.length === 0) {
+    listEl.innerHTML = '<div class="wo-history-empty">No completed sessions yet — log a set to start your history</div>';
+    return;
+  }
+
+  listEl.innerHTML = sessions.slice(0, 30).map(s => {
+    const d = WORKOUTS[s.day];
+    const pct = getSessionPct(s.week, s.day);
+    const note = (S.sessionNotes || {})[sessionNoteKey(s.week, s.day)] || '';
+    const noteHtml = note ? `<div class="wo-history-session-note">"${note.length > 80 ? note.slice(0,80)+'…' : note}"</div>` : '';
+    return `<div class="wo-history-session" data-week="${s.week}" data-day="${s.day}">
+      <div class="wo-history-session-hdr">
+        <div class="wo-history-session-day"><span class="wo-history-dot" style="background:${d.color}"></span>W${s.week+1} · ${d.name} — ${d.label}</div>
+        <div class="wo-history-session-pct">${pct}%</div>
+      </div>
+      <div class="wo-history-session-sub">${d.exercises.length} exercises</div>
+      ${noteHtml}
+    </div>`;
+  }).join('');
+
+  listEl.querySelectorAll('.wo-history-session').forEach(el => {
+    el.addEventListener('click', () => {
+      const week = parseInt(el.dataset.week), day = parseInt(el.dataset.day);
+      S.woWeek = week; S.woDay = day; save(); renderWorkout();
+      toast(`Viewing W${week+1} · ${WORKOUTS[day].name}`);
+    });
+  });
 }
 
 
