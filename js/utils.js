@@ -76,6 +76,13 @@ function getExCustomKey(dayIdx, exId) {
   return `ex-${dayIdx}-${exId}`;
 }
 
+// Returns the workout day definition, falling back to WORKOUTS[dayIdx] if not customised
+function getWorkoutDay(dayIdx) {
+  const custom = (S.customWorkout || {})[dayIdx];
+  if (custom) return { ...WORKOUTS[dayIdx], ...custom };
+  return WORKOUTS[dayIdx];
+}
+
 function getExData(dayIdx, ex) {
   const custom = (S.exCustom || {})[getExCustomKey(dayIdx, ex.id)];
   if (custom) return { sets: custom.sets, target: custom.target, isCustom: true };
@@ -150,7 +157,7 @@ function initSessionNotes() {
 function nowISO(){return new Date().toISOString();}
 function wKey(w,d,id,s){return`w${w}-d${d}-${id}-s${s}`;}
 function woDayPct(di){
-  const d=WORKOUTS[di];
+  const d=getWorkoutDay(di);
   const total=d.exercises.reduce((a,e)=>a+e.sets,0);
   const done=d.exercises.reduce((a,e)=>{for(let s=1;s<=e.sets;s++)if(S.logs[wKey(S.woWeek,di,e.id,s)]?.done)a++;return a;},0);
   return total>0?Math.round((done/total)*100):0;
