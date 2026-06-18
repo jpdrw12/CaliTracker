@@ -16,3 +16,15 @@
 #meals-content{padding:0 16px;}
 .meal-sec{margin-bottom:16px;}
 .meal-sec-title{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;padding-left:2px;}
+
+/* ── DAY EDIT MODAL ── */
+.day-type-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:4px;}
+.day-type-btn{padding:7px 4px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--fd);font-size:10px;font-weight:700;letter-spacing:0.3px;cursor:pointer;text-align:center;}
+.day-type-btn.active{border-color:var(--teal);color:var(--teal);background:#1abc9c1a;}
+.day-edit-ex-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);}
+.day-edit-ex-row:last-child{border-bottom:none;}
+.day-edit-ex-name{flex:1;font-size:13px;color:var(--text);}
+.day-edit-ex-move{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;-webkit-tap-highlight-color:transparent;}
+.day-edit-ex-remove{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;-webkit-tap-highlight-color:transparent;}
+.day-edit-add-row{display:flex;gap:8px;margin-top:10px;align-items:center;}
+.day-edit-add-row .field-inp{margin-bottom:0;flex:1;}
