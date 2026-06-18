@@ -132,6 +132,9 @@ function renderWorkout(){
     card.querySelectorAll('.set-inp').forEach(inp=>inp.addEventListener('input',()=>{
       const k=inp.dataset.k;if(!S.logs[k])S.logs[k]={};S.logs[k].reps=inp.value;save();
     }));
+    card.querySelectorAll('.set-inp').forEach(inp=>inp.addEventListener('blur',()=>{
+      if(inp.value) checkForPR(ex.name, inp.value);
+    }));
     card.querySelectorAll('.timer-btn').forEach(btn=>btn.addEventListener('click',e=>{
       e.stopPropagation();
       const k=btn.dataset.k,side=btn.dataset.side||null;
@@ -263,6 +266,43 @@ function renderWorkoutHistory() {
   });
 }
 
+
+// ═══════════════════════════════════════════════════
+// PR DETECTION (Phase 18)
+// ═══════════════════════════════════════════════════
+function parseRepValue(str) {
+  if (!str) return null;
+  const s = str.toString().toLowerCase().trim();
+  // Skip timed values (contain sec/min) — PRs here track reps, not time
+  if (/\b(sec|min)\b/.test(s)) return null;
+  // Handle ranges like "8-10" or "8–10" — take the higher number
+  const rangeMatch = s.match(/(\d+)\s*[-–]\s*(\d+)/);
+  if (rangeMatch) return Math.max(parseInt(rangeMatch[1]), parseInt(rangeMatch[2]));
+  const numMatch = s.match(/(\d+)/);
+  return numMatch ? parseInt(numMatch[1]) : null;
+}
+
+function checkForPR(exName, repsStr) {
+  const newVal = parseRepValue(repsStr);
+  if (newVal === null) return;
+  if (!S.prs) S.prs = [];
+  const idx = S.prs.findIndex(p => p.ex.toLowerCase() === exName.toLowerCase());
+  const existing = idx >= 0 ? S.prs[idx] : null;
+  const existingVal = existing ? parseRepValue(existing.val) : null;
+
+  if (existingVal === null || newVal > existingVal) {
+    const entry = { ex: exName, val: `${newVal} reps`, date: todayStr(), ts: Date.now() };
+    if (idx >= 0) S.prs[idx] = entry;
+    else S.prs.push(entry);
+    save();
+    if (existingVal !== null) {
+      toast(`🏆 New PR! ${exName}: ${newVal} reps (was ${existingVal})`, '#f39c12');
+    } else {
+      toast(`🏆 First PR logged! ${exName}: ${newVal} reps`, '#f39c12');
+    }
+    try { renderPRList(); } catch(e) {}
+  }
+}
 
 // ═══════════════════════════════════════════════════
 // MEAL RENDER
