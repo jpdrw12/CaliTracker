@@ -184,6 +184,31 @@
   </div>
 </div>
 
+<!-- ══ DAY EDIT MODAL ══ -->
+<div class="modal-overlay" id="day-edit-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div><div class="modal-title" id="day-edit-title">EDIT DAY</div></div>
+      <button class="modal-close" onclick="closeDayEdit()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-lbl">Day Label</div>
+      <input class="field-inp" id="day-edit-label" type="text" placeholder="e.g. Push Day"/>
+      <div class="field-lbl" style="margin-top:14px">Day Type</div>
+      <div class="day-type-btns" id="day-type-btns"></div>
+      <div class="field-lbl" style="margin-top:14px">Exercises <span id="day-edit-ex-count" style="color:var(--muted);font-weight:400"></span></div>
+      <div id="day-edit-ex-list"></div>
+      <div class="day-edit-add-row">
+        <input class="field-inp" id="day-edit-new-ex" type="text" placeholder="Add exercise name..."/>
+        <button class="save-btn-teal" onclick="addDayEditExercise()" style="margin-top:0;padding:10px 16px;flex-shrink:0">＋</button>
+      </div>
+      <button class="save-btn-teal" onclick="saveDayEdit()" style="margin-top:16px">SAVE DAY</button>
+      <button class="reset-sm-btn" onclick="resetDayEdit()">Reset to Default</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ WORKOUT PAGE ══ -->
 <div class="page active" id="page-workout">
   <div class="ph">
@@ -195,6 +220,7 @@
           <button class="wk-btn" id="wo-prev">‹</button>
           <span class="wk-num" id="wo-wk">1</span>
           <button class="wk-btn" id="wo-next">›</button>
+          <button class="wk-btn" id="wo-edit-day" title="Edit day">✏️</button>
         </div>
       </div>
     </div>
