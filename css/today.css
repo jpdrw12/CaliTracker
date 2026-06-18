@@ -131,6 +131,24 @@ TODAY PAGE
 .session-notes-arrow.open{transform:rotate(180deg);color:var(--teal);}
 .session-notes-body{display:none;border-top:1px solid var(--border);}
 .session-notes-body.open{display:block;}
+.wo-history-wrap{padding:0 16px 12px;}
+.wo-history-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.wo-history-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.wo-history-title{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.wo-history-arrow{font-size:13px;color:var(--faint);transition:transform 0.2s;}
+.wo-history-arrow.open{transform:rotate(180deg);color:var(--teal);}
+.wo-history-body{display:none;border-top:1px solid var(--border);max-height:340px;overflow-y:auto;}
+.wo-history-body.open{display:block;}
+.wo-history-empty{padding:24px 14px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
+.wo-history-session{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.wo-history-session:last-child{border-bottom:none;}
+.wo-history-session:active{background:var(--surface2);}
+.wo-history-session-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.wo-history-session-day{font-family:var(--fd);font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;}
+.wo-history-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.wo-history-session-pct{font-family:var(--fd);font-size:12px;font-weight:700;color:var(--teal);}
+.wo-history-session-sub{font-size:11px;color:var(--muted);}
+.wo-history-session-note{font-size:11px;color:var(--faint);font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
 .session-notes-inp{
   width:100%;background:none;border:none;color:var(--text);
   padding:12px 14px;font-size:13px;line-height:1.6;
