@@ -17,6 +17,14 @@ document.addEventListener('click', function unlockAudio() {
   // ISO week auto-advance
   checkISOWeekAdvance();
 
+  // Day edit button
+  document.getElementById('wo-edit-day').addEventListener('click', () => openDayEdit());
+
+  // Day edit modal backdrop close
+  document.getElementById('day-edit-modal').addEventListener('click', e => {
+    if (e.target.id === 'day-edit-modal') closeDayEdit();
+  });
+
   // Safety re-bind for week nav (in case challenges.js top-level binding ever fails silently)
   const woPrevBtn = document.getElementById('wo-prev');
   const woNextBtn = document.getElementById('wo-next');
