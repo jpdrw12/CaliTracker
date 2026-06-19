@@ -127,7 +127,7 @@
 }
 
 /* TOAST */
-#toast{position:fixed;top:calc(var(--sat) + 50px);left:50%;transform:translateX(-50%) translateY(-100px);background:var(--teal);color:#07070f;border-radius:20px;padding:10px 20px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:normal;max-width:85vw;text-align:center;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+#toast{position:fixed;top:calc(var(--sat) + 50px);left:50%;transform:translateX(-50%) translateY(-200px);background:var(--teal);color:#07070f;border-radius:20px;padding:10px 20px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;transition:transform 0.3s ease;white-space:normal;max-width:85vw;text-align:center;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.3);}
 
 /* ── SWIPE TO DELETE ── */
 .swipe-wrap{position:relative;overflow:hidden;border-radius:12px;margin-bottom:9px;}
