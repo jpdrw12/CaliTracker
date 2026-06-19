@@ -1,10 +1,9 @@
 // INIT
 // ═══════════════════════════════════════════════════
-// Load + unlock the rest-timer ding via Web Audio API on first user interaction.
-// Web Audio's AudioContext (vs a plain <audio> element) uses iOS's 'ambient'
-// session category, which mixes with other apps' audio instead of pausing it.
-document.addEventListener('click', function unlockDingAudio() {
-  _loadDingBuffer();
+// Unlock audio on first user interaction (required by mobile browsers)
+document.addEventListener('click', function unlockAudio() {
+  const a = document.getElementById('ding-audio');
+  if (a) { a.volume = 0; a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = 1; }).catch(() => { a.volume = 1; }); }
 }, { once: true });
 
   if (!S.lastOpenedDate || S.lastOpenedDate !== todayStr()) {
