@@ -14,6 +14,8 @@ TODAY PAGE
 .today-date-day{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--teal);letter-spacing:0.5px;}
 .today-date-sub{font-size:9px;color:var(--muted);margin-top:1px;letter-spacing:1px;text-transform:uppercase;}
 .today-streak{display:inline-flex;align-items:center;gap:5px;background:var(--chip-yellow-bg);border:1px solid var(--chip-yellow-text);border-radius:20px;padding:4px 10px;font-family:var(--fd);font-size:11px;font-weight:700;color:var(--chip-yellow-text);margin-top:8px;letter-spacing:0.5px;}
+.share-week-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-family:var(--fd);font-size:11px;font-weight:700;color:var(--text);margin-top:8px;margin-left:8px;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.share-week-btn:active{background:var(--border);}
 .today-body{padding:12px 16px 16px;display:flex;flex-direction:column;gap:14px;}
 
 /* TODAY SECTION */
