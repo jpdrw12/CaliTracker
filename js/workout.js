@@ -147,11 +147,13 @@ function renderWorkout(){
         if(side){
           S.logs[k]['reps'+side]=fmtElapsed(elapsed);
           S.logs[k]['done'+side]=true;
+          checkForTimedPR(ex.name, fmtElapsed(elapsed));
           if(S.logs[k].doneL&&S.logs[k].doneR){S.logs[k].done=true;save();renderWorkout();checkDayCompletion();if(navigator.vibrate)navigator.vibrate(8);const restSecs=REST_TIMES[getWorkoutDay(S.woDay).type]||90;if(restSecs>0)startRestTimer(restSecs);}
           else{save();const tv=document.getElementById('tv'+side+'-'+k);if(tv)tv.textContent=fmtElapsed(elapsed);btn.classList.remove('running');btn.classList.add('done-timer');btn.disabled=true;}
         } else {
           S.logs[k].reps=fmtElapsed(elapsed);
           S.logs[k].done=true;
+          checkForTimedPR(ex.name, fmtElapsed(elapsed));
           save();renderWorkout();checkDayCompletion();
           if(navigator.vibrate)navigator.vibrate(8);
           const restSecs=REST_TIMES[getWorkoutDay(S.woDay).type]||90;
@@ -299,6 +301,47 @@ function checkForPR(exName, repsStr) {
       toast(`🏆 New PR! ${exName}: ${newVal} reps (was ${existingVal})`, '#f39c12');
     } else {
       toast(`🏆 First PR logged! ${exName}: ${newVal} reps`, '#f39c12');
+    }
+    try { renderPRList(); } catch(e) {}
+  }
+}
+
+// Parses a duration string ("45s" or "1:23") into total seconds. Returns null if unparseable.
+function parseTimeValue(str) {
+  if (!str) return null;
+  const s = str.toString().trim().toLowerCase();
+  const colonMatch = s.match(/^(\d+):(\d{1,2})$/);
+  if (colonMatch) return parseInt(colonMatch[1]) * 60 + parseInt(colonMatch[2]);
+  const secMatch = s.match(/^(\d+)s$/);
+  if (secMatch) return parseInt(secMatch[1]);
+  const numMatch = s.match(/^(\d+)$/);
+  return numMatch ? parseInt(numMatch[1]) : null;
+}
+
+// Formats a total-seconds value back into the same "M:SS" / "Ns" style used by fmtElapsed,
+// for display in the PR list (so "65" -> "1:05", "45" -> "45s").
+function formatTimeValue(totalSecs) {
+  return fmtElapsed(totalSecs);
+}
+
+// PR detection for timed exercises (Plank, Hollow Body Hold, etc.) — longer duration is the improvement.
+function checkForTimedPR(exName, timeStr) {
+  const newSecs = parseTimeValue(timeStr);
+  if (newSecs === null) return;
+  if (!S.prs) S.prs = [];
+  const idx = S.prs.findIndex(p => p.ex.toLowerCase() === exName.toLowerCase());
+  const existing = idx >= 0 ? S.prs[idx] : null;
+  const existingSecs = existing ? parseTimeValue(existing.val) : null;
+
+  if (existingSecs === null || newSecs > existingSecs) {
+    const entry = { ex: exName, val: formatTimeValue(newSecs), date: todayStr(), ts: Date.now() };
+    if (idx >= 0) S.prs[idx] = entry;
+    else S.prs.push(entry);
+    save();
+    if (existingSecs !== null) {
+      toast(`🏆 New PR! ${exName}: ${formatTimeValue(newSecs)} (was ${formatTimeValue(existingSecs)})`, '#f39c12');
+    } else {
+      toast(`🏆 First PR logged! ${exName}: ${formatTimeValue(newSecs)}`, '#f39c12');
     }
     try { renderPRList(); } catch(e) {}
   }
