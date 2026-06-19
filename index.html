@@ -120,6 +120,7 @@
       </div>
     </div>
     <div id="today-streak-pill" class="today-streak" style="display:none">🔥 <span id="today-streak-num">0</span> day streak</div>
+    <button class="share-week-btn" onclick="openWeeklySummary()">📤 Share Week</button>
   </div>
   <div id="challenge-strip-wrap" style="padding:0 16px;"></div>
   <div class="today-body" id="today-body"></div>
@@ -127,6 +128,22 @@
 
 <!-- QUICK ADD FAB -->
 <button id="today-fab" onclick="openQuickAdd()">＋</button>
+
+<!-- ══ WEEKLY SUMMARY PREVIEW ══ -->
+<div class="modal-overlay" id="summary-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div><div class="modal-title">📤 SHARE WEEK</div></div>
+      <button class="modal-close" onclick="closeWeeklySummary()">✕ Close</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <img id="summary-img" style="width:100%;border-radius:16px;border:1px solid var(--border);margin-bottom:16px;" />
+      <button class="save-btn-teal" onclick="shareWeeklySummary()">📤 SHARE</button>
+      <button class="reset-sm-btn" onclick="downloadWeeklySummary()">⬇ Download Image</button>
+    </div>
+  </div>
+</div>
 
 <!-- QUICK ADD MODAL -->
 <div class="modal-overlay" id="quickadd-modal">
@@ -702,6 +719,7 @@
   <script src="js/today.js"></script>
   <script src="js/body.js"></script>
   <script src="js/challenges.js"></script>
+  <script src="js/summary.js"></script>
   <script src="js/init.js"></script>
 </body>
 </html>
