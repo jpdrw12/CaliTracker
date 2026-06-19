@@ -376,41 +376,11 @@ function startRestTimer(seconds) {
   }, 1000);
 }
 
-let _dingAudioCtx = null;
-let _dingAudioBuffer = null;
-let _dingLoadPromise = null;
-
-function _loadDingBuffer() {
-  if (_dingLoadPromise) return _dingLoadPromise;
-  _dingLoadPromise = (async () => {
-    try {
-      if (!_dingAudioCtx) _dingAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const res = await fetch('assets/ding.mp3');
-      const arrayBuf = await res.arrayBuffer();
-      _dingAudioBuffer = await _dingAudioCtx.decodeAudioData(arrayBuf);
-    } catch(e) { /* fall back to <audio> below if this fails */ }
-  })();
-  return _dingLoadPromise;
-}
-
 function playDing() {
-  // Preferred path: Web Audio API — uses the 'ambient' session category on iOS,
-  // which mixes with other apps' audio instead of pausing it.
-  try {
-    if (_dingAudioCtx && _dingAudioBuffer) {
-      if (_dingAudioCtx.state === 'suspended') _dingAudioCtx.resume();
-      const src = _dingAudioCtx.createBufferSource();
-      src.buffer = _dingAudioBuffer;
-      src.connect(_dingAudioCtx.destination);
-      src.start(0);
-      return;
-    }
-  } catch(e) {}
-  // Fallback: plain <audio> element (will interrupt other apps' audio, but ensures sound still plays)
   try {
     const a = document.getElementById('ding-audio');
     a.currentTime = 0;
-    a.play();
+    a.play().catch(()=>{});
   } catch(e) {}
 }
 
