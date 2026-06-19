@@ -2,7 +2,7 @@ function toast(msg,color='#1abc9c'){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.background=color;
   t.style.transform='translateX(-50%) translateY(0)';
-  clearTimeout(t._h);t._h=setTimeout(()=>{t.style.transform='translateX(-50%) translateY(-80px)';},2500);
+  clearTimeout(t._h);t._h=setTimeout(()=>{t.style.transform='translateX(-50%) translateY(-200px)';},2500);
 }
 
 // ═══════════════════════════════════════════════════
