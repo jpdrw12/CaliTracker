@@ -27,4 +27,5 @@
 .day-edit-ex-move{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;-webkit-tap-highlight-color:transparent;}
 .day-edit-ex-remove{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;-webkit-tap-highlight-color:transparent;}
 .day-edit-add-row{display:flex;gap:8px;margin-top:10px;align-items:center;}
-.day-edit-add-row .field-inp{margin-bottom:0;flex:1;}
+.day-edit-add-row .field-inp{margin-bottom:0;flex:1;width:auto;min-width:0;}
+.day-edit-add-row .save-btn-teal{width:auto;flex-shrink:0;}
