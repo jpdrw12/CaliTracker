@@ -64,22 +64,25 @@ function renderBodyCompletedChallenges() {
       grouped[r.exercise].push(r);
     });
     const groupsHTML = Object.entries(grouped).map(([key, runs]) => {
-      const m = CMETA[key] || {label:key, emoji:'🏆'};
+      const m = CMETA[key] || {label:key, emoji:'🏆', color:'gold'};
       const rows = runs.map((r, i) => {
         const date = r.completedAt ? new Date(r.completedAt).toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'}) : '—';
         const runNum = runs.length - i;
-        return `<div class="completed-run-row">
-          <span class="completed-run-num">Run #${runNum}</span>
-          <span class="completed-run-reps">${r.totalReps} reps</span>
-          <span class="completed-run-date">${date}</span>
+        return `<div class="challenge-strip-row">
+          <div class="challenge-strip-icon">${m.emoji}</div>
+          <div class="challenge-strip-info">
+            <div class="challenge-strip-name">${m.label} <span style="color:gold;font-size:10px">✓ Run #${runNum}</span></div>
+            <div class="challenge-strip-sub">${r.totalReps} reps total · completed ${date}</div>
+            <div class="challenge-strip-bar-track"><div class="challenge-strip-bar-fill" style="width:100%;background:gold"></div></div>
+          </div>
         </div>`;
       }).join('');
       return `<div class="completed-challenge-group">
         <div class="completed-challenge-hdr">${m.emoji} ${m.label} <span class="completed-run-badge">${runs.length} run${runs.length!==1?'s':''}</span></div>
-        ${rows}
+        <div style="display:flex;flex-direction:column;gap:8px">${rows}</div>
       </div>`;
     }).join('');
-    histHTML = `<div class="data-section-title">COMPLETED</div><div class="data-card">${groupsHTML}</div>`;
+    histHTML = `<div class="data-section-title">COMPLETED</div><div style="display:flex;flex-direction:column;gap:18px">${groupsHTML}</div>`;
   }
 
   wrap.innerHTML = activeHTML + histHTML;
