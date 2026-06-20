@@ -89,20 +89,47 @@ async function buildWeeklySummaryCanvas() {
   const border = isLight ? '#ddd' : '#222';
   const teal = '#1abc9c';
 
-  // Background
-  ctx.fillStyle = bg;
+  // Background — subtle vertical gradient instead of flat fill
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  if (isLight) {
+    bgGrad.addColorStop(0, '#fafaf6');
+    bgGrad.addColorStop(1, '#eeeee6');
+  } else {
+    bgGrad.addColorStop(0, '#0a0a14');
+    bgGrad.addColorStop(1, '#05050a');
+  }
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
   let y = 60;
 
+  // Logo mark — a simple rounded square badge with a stylized flex icon, drawn (no image asset needed)
+  const badgeSize = 64, badgeX = 50, badgeY = y - 44;
+  const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeSize, badgeY + badgeSize);
+  badgeGrad.addColorStop(0, '#1abc9c');
+  badgeGrad.addColorStop(1, '#16a085');
+  ctx.fillStyle = badgeGrad;
+  roundRect(ctx, badgeX, badgeY, badgeSize, badgeSize, 16);
+  ctx.fill();
+  ctx.fillStyle = '#07070f';
+  ctx.font = '800 36px "Barlow Condensed", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('💪', badgeX + badgeSize / 2, badgeY + badgeSize / 2 + 13);
+  ctx.textAlign = 'left';
+
+  const textX = badgeX + badgeSize + 20;
+
   // Header
   ctx.fillStyle = muted;
-  ctx.font = '600 22px Barlow, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('FLOOR CALISTHENICS', 50, y);
-  y += 50;
+  ctx.font = '600 20px Barlow, sans-serif';
+  ctx.fillText('FLOOR CALISTHENICS', textX, y - 14);
   ctx.fillStyle = text;
-  ctx.font = '800 56px "Barlow Condensed", sans-serif';
+  ctx.font = '800 34px "Barlow Condensed", sans-serif';
+  ctx.fillText('CALITRACK', textX, y + 18);
+
+  y += 56;
+  ctx.fillStyle = text;
+  ctx.font = '800 48px "Barlow Condensed", sans-serif';
   ctx.fillText('WEEKLY SUMMARY', 50, y);
   y += 36;
   ctx.fillStyle = muted;
@@ -145,27 +172,50 @@ async function buildWeeklySummaryCanvas() {
   ctx.fillText(`${totalSets} sets logged`, cardX + 36 + numW + 14, cy + 18);
 
   cy += 56;
-  // Day dots
-  const dotSize = 16, gap = (cardW - 72 - dotSize * 7) / 6;
+  // Day dots — partial-fill progress ring instead of binary done/not-done
+  const dotSize = 18, gap = (cardW - 72 - dotSize * 7) / 6;
   for (let i = 0; i < 7; i++) {
     const d = getWorkoutDay(i);
     const pct = woDayPct(i);
     const dx = cardX + 36 + i * (dotSize + gap);
+    const cx = dx + dotSize / 2;
+    const r = dotSize / 2;
+
+    // Track (empty ring)
     ctx.beginPath();
-    ctx.arc(dx + dotSize / 2, cy, dotSize / 2, 0, Math.PI * 2);
-    ctx.fillStyle = pct >= 100 ? d.color : (isLight ? '#e8e8e0' : '#1a1a2e');
-    ctx.fill();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = isLight ? '#e0e0d8' : '#222230';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    if (pct > 0) {
+      // Progress arc, starting from top (-90deg), proportional to completion
+      const endAngle = -Math.PI / 2 + (Math.PI * 2 * Math.min(pct, 100) / 100);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, -Math.PI / 2, endAngle);
+      ctx.strokeStyle = d.color;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+    }
+
     if (pct >= 100) {
+      ctx.fillStyle = d.color;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r - 4, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = '#fff';
       ctx.font = '700 11px Barlow, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('✓', dx + dotSize/2, cy + 4);
+      ctx.fillText('✓', cx, cy + 4);
       ctx.textAlign = 'left';
     }
+
     ctx.fillStyle = muted;
     ctx.font = '600 13px Barlow, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(d.name, dx + dotSize / 2, cy + 28);
+    ctx.fillText(d.name, cx, cy + 30);
     ctx.textAlign = 'left';
   }
 
