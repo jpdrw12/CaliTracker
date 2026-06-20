@@ -16,6 +16,11 @@ document.addEventListener('click', function unlockDingAudio() {
   // ISO week auto-advance
   checkISOWeekAdvance();
 
+  // Monday recap auto-prompt (Phase 28) — must run after the ISO week advance above,
+  // so S.woWeek already reflects the new week and "S.woWeek - 1" correctly means
+  // the week that just ended.
+  checkMondayRecap();
+
   // Day edit button
   document.getElementById('wo-edit-day').addEventListener('click', () => openDayEdit());
 
