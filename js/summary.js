@@ -108,7 +108,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-async function buildWeeklySummaryCanvas() {
+async function buildWeeklySummaryCanvas(sections = { challenges: true, meals: true, prs: true }) {
   const W = 750, H = 1500;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -288,7 +288,7 @@ async function buildWeeklySummaryCanvas() {
   y += cardH + 30;
 
   // ── Challenges ──
-  const activeKeys = Object.entries(S.challenges || {}).filter(([,c]) => c);
+  const activeKeys = sections.challenges ? Object.entries(S.challenges || {}).filter(([,c]) => c) : [];
   if (activeKeys.length > 0) {
     const chH = 50 + activeKeys.length * 90;
     ctx.fillStyle = surface;
@@ -334,7 +334,7 @@ async function buildWeeklySummaryCanvas() {
   }
 
   // ── Meals tracked this week ──
-  const { done: mealsDone, total: mealsTotal } = getWeeklyMealsTotal();
+  const { done: mealsDone, total: mealsTotal } = sections.meals ? getWeeklyMealsTotal() : { done: 0, total: 0 };
   if (mealsDone > 0) {
     const mealH = 100;
     ctx.fillStyle = surface;
@@ -359,7 +359,7 @@ async function buildWeeklySummaryCanvas() {
 
   // ── PRs this week (optional) ──
   const weekAgo = Date.now() - 7 * 86400000;
-  const recentPRs = (S.prs || []).filter(p => p.ts && p.ts >= weekAgo).slice(0, 3);
+  const recentPRs = sections.prs ? (S.prs || []).filter(p => p.ts && p.ts >= weekAgo).slice(0, 3) : [];
   if (recentPRs.length > 0) {
     const prH = 130 + (recentPRs.length - 1) * 36;
     ctx.fillStyle = surface;
@@ -407,17 +407,70 @@ async function buildWeeklySummaryCanvas() {
   return finalCanvas;
 }
 
-async function openWeeklySummary() {
-  const canvas = await buildWeeklySummaryCanvas();
+// Same-day cache, keyed by the active section toggles, so repeat opens of the
+// modal on the same day don't redo the canvas work unless toggles changed.
+let _summaryCache = { dateKey: null, sectionsKey: null, canvas: null };
+let _summarySections = { challenges: true, meals: true, prs: true };
+
+function _sectionsKeyFor(sections) {
+  return `${sections.challenges?1:0}${sections.meals?1:0}${sections.prs?1:0}`;
+}
+
+async function _getOrBuildSummaryCanvas(sections) {
+  const dateKey = todayStr();
+  const sectionsKey = _sectionsKeyFor(sections);
+  if (_summaryCache.canvas && _summaryCache.dateKey === dateKey && _summaryCache.sectionsKey === sectionsKey) {
+    return _summaryCache.canvas;
+  }
+  const canvas = await buildWeeklySummaryCanvas(sections);
+  _summaryCache = { dateKey, sectionsKey, canvas };
+  return canvas;
+}
+
+function _invalidateSummaryCache() {
+  _summaryCache = { dateKey: null, sectionsKey: null, canvas: null };
+}
+
+function renderSummaryToggles() {
+  const wrap = document.getElementById('summary-toggles');
+  if (!wrap) return;
+  const defs = [
+    { key: 'challenges', label: 'Challenges' },
+    { key: 'meals', label: 'Meals' },
+    { key: 'prs', label: 'PRs' },
+  ];
+  wrap.innerHTML = defs.map(d =>
+    `<button class="summary-toggle-chip${_summarySections[d.key] ? ' on' : ''}" data-key="${d.key}">${_summarySections[d.key] ? '✓' : ''} ${d.label}</button>`
+  ).join('');
+  wrap.querySelectorAll('.summary-toggle-chip').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const key = btn.dataset.key;
+      _summarySections[key] = !_summarySections[key];
+      renderSummaryToggles();
+      await _renderSummaryPreview();
+    });
+  });
+}
+
+async function _renderSummaryPreview() {
   const overlay = document.getElementById('summary-overlay');
   const img = document.getElementById('summary-img');
+  const canvas = await _getOrBuildSummaryCanvas(_summarySections);
   img.src = canvas.toDataURL('image/png');
-  overlay.classList.add('open');
   overlay._canvas = canvas;
+}
+
+async function openWeeklySummary() {
+  const overlay = document.getElementById('summary-overlay');
+  overlay.classList.add('open');
+  renderSummaryToggles();
+  await _renderSummaryPreview();
 }
 
 function closeWeeklySummary() {
   document.getElementById('summary-overlay').classList.remove('open');
+  // Invalidate so the next open always reflects any data changes made since this session
+  _invalidateSummaryCache();
 }
 
 async function downloadWeeklySummary() {
