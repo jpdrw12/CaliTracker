@@ -2,11 +2,11 @@
 // WEEKLY SUMMARY CARD (Phase 20)
 // ═══════════════════════════════════════════════════
 
-function getWeekDateRange() {
+function getWeekDateRange(weekOffset = 0) {
   const today = new Date();
   const monday = new Date(today);
   const dow = today.getDay() === 0 ? 6 : today.getDay() - 1;
-  monday.setDate(today.getDate() - dow);
+  monday.setDate(today.getDate() - dow + weekOffset * 7);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   const fmt = d => d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
@@ -108,7 +108,21 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-async function buildWeeklySummaryCanvas(sections = { challenges: true, meals: true, prs: true }) {
+async function buildWeeklySummaryCanvas(sections = { challenges: true, meals: true, prs: true }, weekOffset = 0) {
+  if (weekOffset === 0) return _buildSummaryCanvasInner(sections, 0);
+  // Temporarily point S.woWeek at the target week so all the existing helpers
+  // (woWeekPct, getWeeklyRepsTotal, etc.) read the right week without needing
+  // every internal function rewritten to accept an explicit week parameter.
+  const originalWeek = S.woWeek;
+  S.woWeek = Math.max(0, S.woWeek + weekOffset);
+  try {
+    return await _buildSummaryCanvasInner(sections, weekOffset);
+  } finally {
+    S.woWeek = originalWeek;
+  }
+}
+
+async function _buildSummaryCanvasInner(sections, weekOffset) {
   const W = 750, H = 1500;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -167,7 +181,7 @@ async function buildWeeklySummaryCanvas(sections = { challenges: true, meals: tr
   y += 36;
   ctx.fillStyle = muted;
   ctx.font = '500 24px Barlow, sans-serif';
-  ctx.fillText(getWeekDateRange(), 50, y);
+  ctx.fillText(getWeekDateRange(weekOffset), 50, y);
   y += 60;
 
   // ── Workout card ──
@@ -408,27 +422,29 @@ async function buildWeeklySummaryCanvas(sections = { challenges: true, meals: tr
 }
 
 // Same-day cache, keyed by the active section toggles, so repeat opens of the
-// modal on the same day don't redo the canvas work unless toggles changed.
-let _summaryCache = { dateKey: null, sectionsKey: null, canvas: null };
+// Same-day cache, keyed by the active section toggles and week offset, so repeat
+// opens of the modal on the same day don't redo the canvas work unless toggles changed.
+let _summaryCache = { dateKey: null, sectionsKey: null, weekOffset: null, canvas: null };
 let _summarySections = { challenges: true, meals: true, prs: true };
+let _summaryWeekOffset = 0; // 0 = current week, -1 = the Monday-recap "week that just ended"
 
 function _sectionsKeyFor(sections) {
   return `${sections.challenges?1:0}${sections.meals?1:0}${sections.prs?1:0}`;
 }
 
-async function _getOrBuildSummaryCanvas(sections) {
+async function _getOrBuildSummaryCanvas(sections, weekOffset = 0) {
   const dateKey = todayStr();
   const sectionsKey = _sectionsKeyFor(sections);
-  if (_summaryCache.canvas && _summaryCache.dateKey === dateKey && _summaryCache.sectionsKey === sectionsKey) {
+  if (_summaryCache.canvas && _summaryCache.dateKey === dateKey && _summaryCache.sectionsKey === sectionsKey && _summaryCache.weekOffset === weekOffset) {
     return _summaryCache.canvas;
   }
-  const canvas = await buildWeeklySummaryCanvas(sections);
-  _summaryCache = { dateKey, sectionsKey, canvas };
+  const canvas = await buildWeeklySummaryCanvas(sections, weekOffset);
+  _summaryCache = { dateKey, sectionsKey, weekOffset, canvas };
   return canvas;
 }
 
 function _invalidateSummaryCache() {
-  _summaryCache = { dateKey: null, sectionsKey: null, canvas: null };
+  _summaryCache = { dateKey: null, sectionsKey: null, weekOffset: null, canvas: null };
 }
 
 function renderSummaryToggles() {
@@ -455,13 +471,53 @@ function renderSummaryToggles() {
 async function _renderSummaryPreview() {
   const overlay = document.getElementById('summary-overlay');
   const img = document.getElementById('summary-img');
-  const canvas = await _getOrBuildSummaryCanvas(_summarySections);
+  const canvas = await _getOrBuildSummaryCanvas(_summarySections, _summaryWeekOffset);
   img.src = canvas.toDataURL('image/png');
   overlay._canvas = canvas;
 }
 
-async function openWeeklySummary() {
+// ── Phase 28: Monday recap auto-prompt ──
+// Fires once per ISO week, only on Mondays, only if last week has logged data.
+function checkMondayRecap() {
+  const now = new Date();
+  if (now.getDay() !== 1) return; // 1 = Monday
+  const currentISO = getISOWeek(now);
+  if (S.lastSummaryPromptISOWeek === currentISO) return; // already prompted this week
+
+  // Only prompt if the week that just ended (S.woWeek - 1) has any logged data
+  const lastWeek = S.woWeek - 1;
+  if (lastWeek < 0) return;
+  const hasAnyLog = Object.keys(S.logs).some(k => k.startsWith(`w${lastWeek}-`) && S.logs[k]?.done);
+  if (!hasAnyLog) return;
+
+  S.lastSummaryPromptISOWeek = currentISO;
+  save();
+  showMondayRecapBanner();
+}
+
+function showMondayRecapBanner() {
+  const banner = document.getElementById('monday-recap-banner');
+  if (!banner) return;
+  banner.classList.add('show');
+}
+
+function dismissMondayRecapBanner() {
+  const banner = document.getElementById('monday-recap-banner');
+  if (banner) banner.classList.remove('show');
+}
+
+function openMondayRecap() {
+  dismissMondayRecapBanner();
+  openWeeklySummary(-1);
+}
+
+// weekOffset: 0 for "this week" (default, opened manually from the Today tab),
+// -1 for the Monday recap of the week that just ended.
+async function openWeeklySummary(weekOffset = 0) {
+  _summaryWeekOffset = weekOffset;
   const overlay = document.getElementById('summary-overlay');
+  const titleEl = overlay.querySelector('.modal-title');
+  if (titleEl) titleEl.textContent = weekOffset < 0 ? '📤 LAST WEEK RECAP' : '📤 SHARE WEEK';
   overlay.classList.add('open');
   renderSummaryToggles();
   await _renderSummaryPreview();
@@ -471,6 +527,7 @@ function closeWeeklySummary() {
   document.getElementById('summary-overlay').classList.remove('open');
   // Invalidate so the next open always reflects any data changes made since this session
   _invalidateSummaryCache();
+  _summaryWeekOffset = 0;
 }
 
 async function downloadWeeklySummary() {
