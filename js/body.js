@@ -22,9 +22,9 @@ function renderBodyCompletedChallenges() {
   const wrap = document.getElementById('body-completed-challenges-wrap');
   if (!wrap) return;
   const completed = (S.completedChallenges || []).slice().reverse();
-  const CMETA = { pushups:{label:'Push-ups',emoji:'💪'}, situps:{label:'Sit-ups',emoji:'🙇'}, squats:{label:'Squats',emoji:'🦵'} };
+  const CMETA = { pushups:{label:'Push-ups',emoji:'💪',color:'#1abc9c'}, situps:{label:'Sit-ups',emoji:'🙇',color:'#f39c12'}, squats:{label:'Squats',emoji:'🦵',color:'#8e44ad'} };
 
-  // Active challenges summary at top
+  // Active challenges — same card pattern as the Today-tab strip
   const active = Object.entries(S.challenges||{}).filter(([,c])=>c);
   let activeHTML = '';
   if (active.length) {
@@ -34,14 +34,17 @@ function renderBodyCompletedChallenges() {
       const pct = Math.min(100, Math.round((total/c.totalGoal)*100));
       const isComplete = c.completed || total >= c.totalGoal;
       const cStreak = getChallengeStreak(c);
-      return `<div class="completed-run-row" style="cursor:pointer" onclick="openChallengeSheet('${key}')">
-        <span style="font-size:16px">${m.emoji}</span>
-        <span class="completed-run-reps" style="flex:1">${m.label}${isComplete ? ' <span style=\"color:gold;font-size:10px\">✓ COMPLETE</span>' : ''}${cStreak > 1 ? ` <span style=\"color:#f39c12;font-size:10px\">🔥${cStreak}d</span>` : ''}</span>
-        <span class="completed-run-num">${total}/${c.totalGoal}</span>
-        <span style="color:var(--muted);font-size:11px">${pct}%</span>
+      return `<div class="challenge-strip-row" onclick="openChallengeSheet('${key}')">
+        <div class="challenge-strip-icon">${m.emoji}</div>
+        <div class="challenge-strip-info">
+          <div class="challenge-strip-name">${m.label}${isComplete ? ' <span style="color:gold;font-size:10px">✓ COMPLETE</span>' : ''}${cStreak > 1 ? ` <span style="color:#f39c12;font-size:10px">🔥 ${cStreak}d</span>` : ''}</div>
+          <div class="challenge-strip-sub">${total} / ${c.totalGoal} total · ${pct}%</div>
+          <div class="challenge-strip-bar-track"><div class="challenge-strip-bar-fill" style="width:${pct}%;background:${m.color}"></div></div>
+        </div>
+        <div class="challenge-strip-arrow">›</div>
       </div>`;
     }).join('');
-    activeHTML = `<div class="data-section-title" style="margin-top:0">ACTIVE</div><div class="data-card" style="margin-bottom:14px">${rows}</div>`;
+    activeHTML = `<div class="data-section-title" style="margin-top:0">ACTIVE</div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">${rows}</div>`;
   }
 
   if (completed.length === 0 && !activeHTML) {
