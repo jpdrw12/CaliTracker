@@ -13,6 +13,58 @@ function getWeekDateRange() {
   return `${fmt(monday)} – ${fmt(sunday)}`;
 }
 
+// ── Phase 22: Total reps/sets logged this week ──
+function getWeeklyRepsTotal() {
+  let totalReps = 0, totalSets = 0;
+  for (let di = 0; di < 7; di++) {
+    const d = getWorkoutDay(di);
+    d.exercises.forEach(ex => {
+      const exData = getExData(di, ex);
+      for (let s = 1; s <= exData.sets; s++) {
+        const log = S.logs[wKey(S.woWeek, di, ex.id, s)];
+        if (!log || !log.done) continue;
+        totalSets++;
+        // Try rep count first, then time-based (seconds), else count as 1 set with no numeric value
+        const repVal = parseRepValue(log.reps);
+        if (repVal !== null) { totalReps += repVal; continue; }
+        const timeVal = parseTimeValue(log.reps);
+        if (timeVal !== null) { totalReps += timeVal; continue; }
+        // Dual-sided exercises store repsL/repsR instead of reps
+        if (log.repsL) {
+          const l = parseRepValue(log.repsL) ?? parseTimeValue(log.repsL);
+          if (l !== null) totalReps += l;
+        }
+        if (log.repsR) {
+          const r = parseRepValue(log.repsR) ?? parseTimeValue(log.repsR);
+          if (r !== null) totalReps += r;
+        }
+      }
+    });
+  }
+  return { totalReps, totalSets };
+}
+
+// ── Phase 23: Best single day this week ──
+function getBestWorkoutDay() {
+  let best = { dayIdx: -1, pct: -1 };
+  for (let di = 0; di < 7; di++) {
+    const pct = woDayPct(di);
+    if (pct > best.pct) best = { dayIdx: di, pct };
+  }
+  if (best.pct <= 0) return null;
+  return { name: getWorkoutDay(best.dayIdx).name, pct: best.pct };
+}
+
+// ── Phase 24: Meals tracked this week ──
+function getWeeklyMealsTotal() {
+  let done = 0;
+  const total = 7 * 3; // 3 slots/day
+  for (let di = 0; di < 7; di++) {
+    done += mlDayDone(di);
+  }
+  return { done, total };
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -24,7 +76,7 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 async function buildWeeklySummaryCanvas() {
-  const W = 750, H = 1100;
+  const W = 750, H = 1500;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -60,7 +112,7 @@ async function buildWeeklySummaryCanvas() {
 
   // ── Workout card ──
   const cardX = 50, cardW = W - 100;
-  let cardH = 230;
+  let cardH = 320;
   ctx.fillStyle = surface;
   roundRect(ctx, cardX, y, cardW, cardH, 24);
   ctx.fill();
@@ -80,7 +132,19 @@ async function buildWeeklySummaryCanvas() {
   ctx.fillText(`${weekPct}%`, cardX + cardW - 36, cy + 8);
   ctx.textAlign = 'left';
 
-  cy += 50;
+  cy += 46;
+  const { totalReps, totalSets } = getWeeklyRepsTotal();
+  const repsStr = totalReps.toLocaleString();
+  ctx.fillStyle = teal;
+  ctx.font = '800 32px "Barlow Condensed", sans-serif';
+  ctx.fillText(repsStr, cardX + 36, cy);
+  const numW = ctx.measureText(repsStr).width;
+  ctx.fillStyle = muted;
+  ctx.font = '600 16px Barlow, sans-serif';
+  ctx.fillText('TOTAL REPS', cardX + 36 + numW + 14, cy - 2);
+  ctx.fillText(`${totalSets} sets logged`, cardX + 36 + numW + 14, cy + 18);
+
+  cy += 56;
   // Day dots
   const dotSize = 16, gap = (cardW - 72 - dotSize * 7) / 6;
   for (let i = 0; i < 7; i++) {
@@ -110,6 +174,15 @@ async function buildWeeklySummaryCanvas() {
   ctx.fillStyle = '#f39c12';
   ctx.font = '700 18px "Barlow Condensed", sans-serif';
   ctx.fillText(streak > 0 ? `🔥 ${streak} day streak` : 'No active streak', cardX + 36, cy);
+
+  const best = getBestWorkoutDay();
+  if (best) {
+    ctx.fillStyle = muted;
+    ctx.font = '600 16px Barlow, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Best day: ${best.name} (${best.pct}%)`, cardX + cardW - 36, cy);
+    ctx.textAlign = 'left';
+  }
 
   y += cardH + 30;
 
@@ -159,6 +232,30 @@ async function buildWeeklySummaryCanvas() {
     y += chH + 30;
   }
 
+  // ── Meals tracked this week ──
+  const { done: mealsDone, total: mealsTotal } = getWeeklyMealsTotal();
+  if (mealsDone > 0) {
+    const mealH = 100;
+    ctx.fillStyle = surface;
+    roundRect(ctx, cardX, y, cardW, mealH, 24);
+    ctx.fill();
+    ctx.strokeStyle = border;
+    roundRect(ctx, cardX, y, cardW, mealH, 24);
+    ctx.stroke();
+
+    const my = y + 56;
+    ctx.fillStyle = text;
+    ctx.font = '700 22px Barlow, sans-serif';
+    ctx.fillText('🍽 Meals Tracked', cardX + 36, my);
+    ctx.fillStyle = teal;
+    ctx.font = '800 28px "Barlow Condensed", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${mealsDone}/${mealsTotal}`, cardX + cardW - 36, my + 2);
+    ctx.textAlign = 'left';
+
+    y += mealH + 30;
+  }
+
   // ── PRs this week (optional) ──
   const weekAgo = Date.now() - 7 * 86400000;
   const recentPRs = (S.prs || []).filter(p => p.ts && p.ts >= weekAgo).slice(0, 3);
@@ -193,13 +290,20 @@ async function buildWeeklySummaryCanvas() {
   }
 
   // Footer
+  y += 20;
   ctx.fillStyle = muted;
   ctx.font = '500 16px Barlow, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('CaliTrack · Built for consistency', W / 2, H - 40);
+  ctx.fillText('CaliTrack · Built for consistency', W / 2, y);
   ctx.textAlign = 'left';
+  y += 50;
 
-  return canvas;
+  // Crop the canvas to the actual content height so there's no empty space below the footer
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = W;
+  finalCanvas.height = y;
+  finalCanvas.getContext('2d').drawImage(canvas, 0, 0, W, y, 0, 0, W, y);
+  return finalCanvas;
 }
 
 async function openWeeklySummary() {
