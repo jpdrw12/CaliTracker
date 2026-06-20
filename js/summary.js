@@ -361,7 +361,7 @@ async function buildWeeklySummaryCanvas() {
   const weekAgo = Date.now() - 7 * 86400000;
   const recentPRs = (S.prs || []).filter(p => p.ts && p.ts >= weekAgo).slice(0, 3);
   if (recentPRs.length > 0) {
-    const prH = 50 + recentPRs.length * 46;
+    const prH = 130 + (recentPRs.length - 1) * 36;
     ctx.fillStyle = surface;
     roundRect(ctx, cardX, y, cardW, prH, 24);
     ctx.fill();
