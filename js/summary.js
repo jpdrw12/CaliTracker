@@ -215,13 +215,14 @@ async function buildWeeklySummaryCanvas() {
   ctx.fillText(`${totalSets} sets logged`, cardX + 36 + numW + 14, cy + 18);
 
   if (comparison) {
+    cy += 38;
     const repsUp = comparison.repsDelta >= 0;
     ctx.fillStyle = repsUp ? '#27ae60' : '#e74c3c';
     ctx.font = '700 15px Barlow, sans-serif';
-    ctx.fillText(`${repsUp ? '↑' : '↓'} ${Math.abs(comparison.repsDelta).toLocaleString()} reps vs last week (${comparison.lastReps.toLocaleString()})`, cardX + 36, cy + 24);
+    ctx.fillText(`${repsUp ? '↑' : '↓'} ${Math.abs(comparison.repsDelta).toLocaleString()} reps vs last week (${comparison.lastReps.toLocaleString()})`, cardX + 36, cy);
   }
 
-  cy += comparison ? 76 : 56;
+  cy += comparison ? 50 : 56;
   // Day dots — partial-fill progress ring instead of binary done/not-done
   const dotSize = 18, gap = (cardW - 72 - dotSize * 7) / 6;
   for (let i = 0; i < 7; i++) {
