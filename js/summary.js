@@ -13,15 +13,15 @@ function getWeekDateRange() {
   return `${fmt(monday)} – ${fmt(sunday)}`;
 }
 
-// ── Phase 22: Total reps/sets logged this week ──
-function getWeeklyRepsTotal() {
+// ── Phase 22: Total reps/sets logged this week (optionally for a specific week) ──
+function getWeeklyRepsTotal(weekNum = S.woWeek) {
   let totalReps = 0, totalSets = 0;
   for (let di = 0; di < 7; di++) {
     const d = getWorkoutDay(di);
     d.exercises.forEach(ex => {
       const exData = getExData(di, ex);
       for (let s = 1; s <= exData.sets; s++) {
-        const log = S.logs[wKey(S.woWeek, di, ex.id, s)];
+        const log = S.logs[wKey(weekNum, di, ex.id, s)];
         if (!log || !log.done) continue;
         totalSets++;
         // Try rep count first, then time-based (seconds), else count as 1 set with no numeric value
@@ -42,6 +42,39 @@ function getWeeklyRepsTotal() {
     });
   }
   return { totalReps, totalSets };
+}
+
+// ── Phase 25: Week-aware completion % (mirrors woDayPct/woWeekPct but for any week) ──
+function woDayPctFor(weekNum, di) {
+  const d = getWorkoutDay(di);
+  const total = d.exercises.reduce((a, e) => a + e.sets, 0);
+  const done = d.exercises.reduce((a, e) => {
+    for (let s = 1; s <= e.sets; s++) if (S.logs[wKey(weekNum, di, e.id, s)]?.done) a++;
+    return a;
+  }, 0);
+  return total > 0 ? Math.round((done / total) * 100) : 0;
+}
+function woWeekPctFor(weekNum) {
+  return Math.round(WORKOUTS.reduce((a, _, i) => a + woDayPctFor(weekNum, i), 0) / 7);
+}
+
+// Returns null if last week has no logged data at all (so the UI can omit the comparison cleanly)
+function getWeekComparison() {
+  const lastWeek = S.woWeek - 1;
+  if (lastWeek < 0) return null;
+  const hasAnyLog = Object.keys(S.logs).some(k => k.startsWith(`w${lastWeek}-`) && S.logs[k]?.done);
+  if (!hasAnyLog) return null;
+
+  const thisPct = woWeekPct();
+  const lastPct = woWeekPctFor(lastWeek);
+  const { totalReps: thisReps } = getWeeklyRepsTotal(S.woWeek);
+  const { totalReps: lastReps } = getWeeklyRepsTotal(lastWeek);
+
+  return {
+    pctDelta: thisPct - lastPct,
+    repsDelta: thisReps - lastReps,
+    lastReps,
+  };
 }
 
 // ── Phase 23: Best single day this week ──
@@ -139,7 +172,8 @@ async function buildWeeklySummaryCanvas() {
 
   // ── Workout card ──
   const cardX = 50, cardW = W - 100;
-  let cardH = 320;
+  const comparison = getWeekComparison();
+  let cardH = comparison ? 360 : 320;
   ctx.fillStyle = surface;
   roundRect(ctx, cardX, y, cardW, cardH, 24);
   ctx.fill();
@@ -159,7 +193,16 @@ async function buildWeeklySummaryCanvas() {
   ctx.fillText(`${weekPct}%`, cardX + cardW - 36, cy + 8);
   ctx.textAlign = 'left';
 
-  cy += 46;
+  if (comparison) {
+    const pctUp = comparison.pctDelta >= 0;
+    ctx.fillStyle = pctUp ? '#27ae60' : '#e74c3c';
+    ctx.font = '700 15px Barlow, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${pctUp ? '↑' : '↓'} ${Math.abs(comparison.pctDelta)}% vs last week`, cardX + cardW - 36, cy + 28);
+    ctx.textAlign = 'left';
+  }
+
+  cy += comparison ? 56 : 46;
   const { totalReps, totalSets } = getWeeklyRepsTotal();
   const repsStr = totalReps.toLocaleString();
   ctx.fillStyle = teal;
@@ -171,7 +214,14 @@ async function buildWeeklySummaryCanvas() {
   ctx.fillText('TOTAL REPS', cardX + 36 + numW + 14, cy - 2);
   ctx.fillText(`${totalSets} sets logged`, cardX + 36 + numW + 14, cy + 18);
 
-  cy += 56;
+  if (comparison) {
+    const repsUp = comparison.repsDelta >= 0;
+    ctx.fillStyle = repsUp ? '#27ae60' : '#e74c3c';
+    ctx.font = '700 15px Barlow, sans-serif';
+    ctx.fillText(`${repsUp ? '↑' : '↓'} ${Math.abs(comparison.repsDelta).toLocaleString()} reps vs last week (${comparison.lastReps.toLocaleString()})`, cardX + 36, cy + 24);
+  }
+
+  cy += comparison ? 76 : 56;
   // Day dots — partial-fill progress ring instead of binary done/not-done
   const dotSize = 18, gap = (cardW - 72 - dotSize * 7) / 6;
   for (let i = 0; i < 7; i++) {
